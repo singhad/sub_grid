@@ -2,6 +2,27 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import lognorm
 
+def make_pdf(x, x_mean, s):
+    pdf = (1/np.sqrt(2*np.pi*(vel_disp**2))) * (np.exp(-0.5*(((x - x_mean)/vel_disp)**2)))
+    return pdf
+
+def calc_num_LW(tau):
+    a = 1.0
+    for i in range(10):
+        local_rad_field = a  #solar units
+    num_LW = local_rad_field * np.exp(-tau)
+    return num_LW
+
+
+
+
+
+
+
+
+
+
+'''
 #function to generate the PDF
 def make_pdf(x, x_bar, s):
     pdf = (1/(s * np.sqrt(2*np.pi))) * np.exp(-1/2*(((x - x_bar)/s)**2))
@@ -71,4 +92,4 @@ if __name__=='__main__':
     plt.xlabel('log(pdf)')
     plt.grid(b=True, which='both', axis='both')
     plt.savefig('logPDFvslogPDF.png'.format(i=i))
-    plt.clf()
+    plt.clf()'''
