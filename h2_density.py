@@ -67,16 +67,6 @@ if __name__=='__main__':
         X_H2 = calc_X_H2(n_H, n_LW)
         n_H2 = calc_num_H2(n_H, X_H2)
 
-
-        '''
-        np.append(x, np.log(n_H/n_H_mean))
-        np.append(pdf, make_pdf(np.log(n_H/n_H_mean), x_mean, vel_disp))
-        np.append(lambda_jeans_cm, calc_lambda_jeans(T_mean, n_H))
-        np.append(tau, calc_optical_depth(n_H, lambda_jeans_cm))
-        np.append(n_LW, calc_num_LW(tau))
-        np.append(X_H2, calc_X_H2(n_H, n_LW))
-        np.append(n_H2, calc_num_H2(n_H, X_H2))'''
-
     #plotting log(n) vs log(PDF)
     plt.plot(x, np.log(pdf), lw=1, color='b')
     plt.xlabel('log(n) [H/cc]')
