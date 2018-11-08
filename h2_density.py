@@ -45,7 +45,7 @@ if __name__=='__main__':
     m_p = 1.672621777e-24  # g
     T_mean = 10.    #K
     mach_no = 5.
-    n_H_range = 10000
+    n_H_range = 100
     n_H_mean = 100    # [H] cm^-3
     vel_disp = np.sqrt(np.log(1 + ((0.3 * mach_no)**2))) #vel_disp in pdf
     x_mean = 1
@@ -91,7 +91,6 @@ if __name__=='__main__':
     plt.title('log(lambda_Jeans) vs log(n)')
     plt.savefig('log(lambda_Jeans)vsX_fromcode.png'.format(i=i))
     plt.clf()
-
     #plotting X_H2 vs log(n_H)
     plt.plot(x, X_H2, lw=1, color='b')
     plt.xlabel('log(n_H) [H/cc]')
@@ -99,3 +98,12 @@ if __name__=='__main__':
     plt.grid(b=True, which='both', axis='both')
     plt.title('log(n_H) vs X_H2')
     plt.savefig('log(n_H)vsX_H2.png'.format(i=i))
+    plt.clf()
+    #plotting X_H2 vs log(n_H2)
+    plt.plot(np.log(n_H2), X_H2, lw=1, color='b')
+    plt.xlabel('log(n_H2) [H2/cc]')
+    plt.ylabel('X_H2')
+    plt.grid(b=True, which='both', axis='both')
+    plt.title('log(n_H2) vs X_H2')
+    plt.savefig('log(n_H2)vsX_H2.png'.format(i=i))
+    plt.clf()
