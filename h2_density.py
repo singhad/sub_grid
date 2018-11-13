@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.integrate import nquad
 
 #function to generate the PDF
 def make_pdf(x, x_mean, s):
@@ -40,6 +41,18 @@ def calc_num_H2(n_H, X_H2):
     n_H2 = n_H * X_H2   #H2/cc
     return n_H2
 
+def calc_n_H_bar(n_H, pdf):
+    n_H_bar = n_H * pdf
+    return n_H_bar
+
+def calc_n_H2_bar(n_H, pdf, X_H2):
+    n_H2_bar = X_H2 * n_H * pdf
+    return n_H2_bar
+
+def calc_X_H2_bar(n_H_bar, n_H2_bar):
+    X_H2_bar = n_H_bar/n_H2_bar
+    return X_H2_bar
+
 if __name__=='__main__':
     fig, ax = plt.subplots()
     m_p = 1.672621777e-24  # g
@@ -56,6 +69,10 @@ if __name__=='__main__':
     n_LW = np.zeros(100)    #number of Lyman-Werner photons
     n_H2 = np.zeros(100)
     X_H2 = np.zeros(100)
+    n_H_bar = np.zeros(100)
+    n_H2_bar = np.zeros(100)
+    n_H2_bar = np.zeros(100)
+    X_H2_bar = np.zeros(100)
 
     for i in range(1, n_H_range):
         n_H = (np.logspace(-4, 5, 100) * i) # [H] cm^-3
@@ -66,8 +83,19 @@ if __name__=='__main__':
         n_LW = calc_num_LW(tau)
         X_H2 = calc_X_H2(n_H, n_LW)
         n_H2 = calc_num_H2(n_H, X_H2)
+    n_H_bar = nquad(calc_n_H_bar, 0, 100, args=pdf, )
+    n_H2_bar = nquad(calc_n_H2_bar, 0, 100, args=pdf, X_H2, )
+        #X_H2_bar = calc_X_H2_bar(n_H_bar, n_H2_bar)
 
-    #plotting log(n) vs log(PDF)
+    #plotting n_H_bar vs X_H2_bar
+    plt.plot(n_H_bar, X_H2_bar, lw=1, color='b')
+    plt.xlabel('n_H_bar [H/cc]')
+    plt.ylabel('X_H2_bar')
+    plt.grid(b=True, which='both', axis='both')
+    plt.title('n_H_bar vs X_H2_bar')
+    plt.savefig('n_H_barvsX_H2_bar_fromcode.png'.format(i=i))
+    plt.clf()
+    """#plotting log(n) vs log(PDF)
     plt.plot(x, np.log(pdf), lw=1, color='b')
     plt.xlabel('log(n) [H/cc]')
     plt.ylabel('log(PDF)')
@@ -98,12 +126,4 @@ if __name__=='__main__':
     plt.grid(b=True, which='both', axis='both')
     plt.title('log(n_H) vs X_H2')
     plt.savefig('log(n_H)vsX_H2.png'.format(i=i))
-    plt.clf()
-    #plotting X_H2 vs log(n_H2)
-    plt.plot(np.log(n_H2), X_H2, lw=1, color='b')
-    plt.xlabel('log(n_H2) [H2/cc]')
-    plt.ylabel('X_H2')
-    plt.grid(b=True, which='both', axis='both')
-    plt.title('log(n_H2) vs X_H2')
-    plt.savefig('log(n_H2)vsX_H2.png'.format(i=i))
-    plt.clf()
+    plt.clf()"""
