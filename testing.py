@@ -1,18 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.stats import lognorm
+from scipy.integrate import quad
 
-def make_pdf(x, x_mean, s):
-    pdf = (1/np.sqrt(2*np.pi*(vel_disp**2))) * (np.exp(-0.5*(((x - x_mean)/vel_disp)**2)))
-    return pdf
+def f(x):
+    return x**2
 
-def calc_num_LW(tau):
-    a = 1.0
-    for i in range(10):
-        local_rad_field = a  #solar units
-    num_LW = local_rad_field * np.exp(-tau)
-    return num_LW
-
+if __name__=='__main__':
+    f = quad(f, 0, 1)
+    print (f)
 
 
 
