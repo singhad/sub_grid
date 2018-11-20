@@ -61,7 +61,7 @@ if __name__=='__main__':
     plt.savefig('XvsPDF.png'.format(i=i))
     plt.clf()
     #plotting log(n) vs log(PDF)
-    plt.plot(x[1], np.log(pdf[1]), lw=1, color='b')
+    plt.plot(x[1], log(pdf[1]), lw=1, color='b')
     plt.xlabel('log(n) [H/cc]')
     plt.ylabel('log(PDF)')
     plt.grid(b=True, which='both', axis='both')
