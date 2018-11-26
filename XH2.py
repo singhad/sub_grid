@@ -39,14 +39,14 @@ def plotting1(n_H, X_H2):
     plt.savefig('log(n_H)vsX_H2.png'.format())
     plt.clf()
 
-def plotting2(n_H, X_H2_bar):
-    #plotting log(n_H) vs X_H2_bar
-    plt.plot(np.log10(n_H), X_H2_bar)
-    plt.xlabel('log(n_H)')
+def plotting2(n_H_bar, X_H2_bar):
+    #plotting log(n_H_bar) vs X_H2_bar
+    plt.plot(np.log10(n_H_bar), X_H2_bar)
+    plt.xlabel('log(n_H_bar)')
     plt.ylabel('X_H2_bar')
     plt.grid(b=True, which='both', axis='both')
-    plt.title('log(n_H) vs X_H2_bar')
-    plt.savefig(os.path.join('log(n_H)vsX_H2_bar.png'.format()))
+    plt.title('log(n_H_bar) vs X_H2_bar')
+    plt.savefig(os.path.join('log(n_H_bar)vsX_H2_bar.png'.format()))
     plt.clf()
 
 if __name__=='__main__':
@@ -54,6 +54,7 @@ if __name__=='__main__':
     pdf = np.zeros(1000)
     X_H2 = np.zeros(1000)
     n_H2 = np.zeros(1000)
+    n_H_bar = np.zeros(1000)
     tot_n_H_bar = np.zeros(1000)
     tot_n_H2_bar = np.zeros(1000)
     X_H2_bar = np.zeros(1000)
@@ -69,7 +70,8 @@ if __name__=='__main__':
         n_H2 = X_H2 * n_H
         s = smin + i*ds
         pdf = make_pdf(s)
+        n_H_bar += n_H * np.exp(-s)
         tot_n_H_bar += np.exp(s) * pdf * ds
         X_H2_bar += np.exp(s) * pdf * ds * X_H2
     plotting1(n_H, X_H2)
-    plotting2(n_H, X_H2_bar)
+    plotting2(n_H_bar, X_H2_bar)
