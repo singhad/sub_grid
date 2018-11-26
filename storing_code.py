@@ -1,4 +1,90 @@
+'''
+# ---------------
+# Working code for integration to find X_H2_bar
+# ---------------
 
+import numpy as np
+import matplotlib.pyplot as plt
+import os
+
+def make_pdf(s):
+    mach_no = 5
+    n_H_mean = 100
+    sigma_s = np.sqrt(np.log(1 + ((0.3 * mach_no)**2)))
+    s_mean = -0.5*(sigma_s**2)
+    pdf = (1/np.sqrt(2*np.pi*(sigma_s**2))) * (np.exp(-0.5*(((s - s_mean)/sigma_s)**2)))
+    return pdf
+
+def make_X_H2(n_H):
+    m_p = 1.672621777e-24  # g
+    T_mean = 10.    #K
+    K_b = 1.38064852e-16    # ergs K-1
+    G = 6.67408e-8          # dyne cm^2 g^-2
+    kappa = 1000 * m_p
+    DC = 1.7e-11
+    CC = 2.5e-17    #cm3 s-1
+    rad_field_outside = 1.0     #in solar units
+    Z = 1
+    exp_tau = np.exp(-kappa * n_H * ((np.sqrt(K_b * T_mean / m_p)) / np.sqrt(4* np.pi * G * n_H * m_p)))
+    numerator = DC * rad_field_outside * exp_tau
+    denominator = CC * Z * n_H
+    X_H2 = 1 / (2 + (numerator/denominator) )
+    return X_H2
+
+def plotting1(n_H, X_H2):
+    path = 'storing_code'
+    os.makedirs(path, exist_ok=True)
+    os.chdir(path)
+    #plotting X_H2 vs log(n_H)
+    plt.plot(np.log10(n_H), X_H2)
+    plt.xlabel('log(n_H)')
+    plt.ylabel('X_H2')
+    plt.grid(b=True, which='both', axis='both')
+    plt.title('log(n_H) vs X_H2')
+    plt.savefig('log(n_H)vsX_H2.png'.format())
+    plt.clf()
+
+def plotting2(n_H, X_H2_bar):
+    #plotting log(n_H) vs X_H2_bar
+    plt.plot(np.log10(n_H), X_H2_bar)
+    plt.xlabel('log(n_H)')
+    plt.ylabel('X_H2_bar')
+    plt.grid(b=True, which='both', axis='both')
+    plt.title('log(n_H) vs X_H2_bar')
+    plt.savefig(os.path.join('log(n_H)vsX_H2_bar.png'.format()))
+    plt.clf()
+
+if __name__=='__main__':
+    exp_s = np.zeros(1000)
+    pdf = np.zeros(1000)
+    X_H2 = np.zeros(1000)
+    n_H2 = np.zeros(1000)
+    tot_n_H_bar = np.zeros(1000)
+    tot_n_H2_bar = np.zeros(1000)
+    X_H2_bar = np.zeros(1000)
+    integral1 = 0
+    smin = -4
+    smax = 5
+    s = 0
+    ds = (smax - smin)/1000
+
+#using user-defined trapezoidal functions
+    for i in range(1, 1000):
+        n_H = (np.logspace(-4, 5, 1000) * i) # [H] cm^-3
+        X_H2 = make_X_H2(n_H)
+        n_H2 = X_H2 * n_H
+        s = smin + i*ds
+        pdf = make_pdf(s)
+        tot_n_H_bar += np.exp(s) * pdf * ds
+        X_H2_bar += np.exp(s) * pdf * ds * X_H2
+    plotting1(n_H, X_H2)
+    plotting2(n_H, X_H2_bar)
+'''
+
+
+
+
+#*******************************************************************************
 
 '''
 # ---------------
@@ -70,7 +156,7 @@ def plotting(x, pdf, lambda_jeans_cm, n_H, X_H2, X_H2_bar):
         for i in range(1, n_H_range):
             n_H = (np.logspace(-4, 5, 100) * i) # [H] cm^-3
             x = np.log(n_H/n_H_mean)
-            pdf = make_pdf(x, x_mean, vel_disp)
+            pdf = make_pdf(x, x_mean, s)
             lambda_jeans_cm = calc_lambda_jeans(T_mean, n_H)
             tau = calc_optical_depth(n_H, lambda_jeans_cm)
             n_LW = calc_num_LW(tau)
@@ -154,13 +240,13 @@ if __name__=='__main__':
         Z = Z_arr[i]
         for j in range(len(mach_no_arr)):
             mach_no = mach_no_arr[j]
-            vel_disp = np.sqrt(np.log(1 + ((0.3 * mach_no)**2))) #vel_disp in pdf
+            s = np.sqrt(np.log(1 + ((0.3 * mach_no)**2))) #s in pdf
             for k in range(len(n_H_mean_arr)):
                 n_H_mean = n_H_mean_arr[k] # [H] cm^-3
                 for l in range(1, n_H_range):
                     n_H[i][j][k] = (np.logspace(-3, 3, 100) * l) # [H] cm^-3
                     x[i][j][k][l] = np.log(n_H[i][j][k][l]/n_H_mean)
-                    pdf[i][j][k][l] = make_pdf(x[i][j][k][l], x_mean, vel_disp)
+                    pdf[i][j][k][l] = make_pdf(x[i][j][k][l], x_mean, s)
                     lambda_jeans_cm[i][j][k][l] = calc_lambda_jeans(T_mean, n_H[i][j][k][l])
                     tau[i][j][k][l] = calc_optical_depth(n_H[i][j][k][l], lambda_jeans_cm[i][j][k][l])
                     n_LW[i][j][k][l] = calc_num_LW(tau[i][j][k][l])
@@ -207,7 +293,7 @@ class H2_density:
     self.Z_arr = Z_arr
     #function to generate the PDF
     def make_pdf(x, x_mean, s):
-        pdf = (1/np.sqrt(2*np.pi*(vel_disp**2))) * (np.exp(-0.5*(((x - x_mean)/vel_disp)**2)))
+        pdf = (1/np.sqrt(2*np.pi*(s**2))) * (np.exp(-0.5*(((x - x_mean)/s)**2)))
         return pdf
 
     #function to calculate Jeans length
@@ -262,13 +348,13 @@ class H2_density:
             Z = Z_arr[z_ctr]
             for mach_ctr in range(len(mach_no_arr)-1):
                 mach_no = mach_no_arr[mach_ctr]
-                vel_disp = np.sqrt(np.log(1 + ((0.3 * mach_no)**2))) #vel_disp in pdf
+                s = np.sqrt(np.log(1 + ((0.3 * mach_no)**2))) #s in pdf
                 for n_H_mean_ctr in range(len(n_H_mean_arr)-1):
                     n_H_mean = n_H_mean_arr[n_H_mean_ctr] # [H] cm^-3
                     for i in range(1, n_H_range):
                         n_H = (np.logspace(-4, 5, 100) * i) # [H] cm^-3
                         x = np.log(n_H/n_H_mean)
-                        pdf = make_pdf(x, x_mean, vel_disp)
+                        pdf = make_pdf(x, x_mean, s)
                         lambda_jeans_cm = calc_lambda_jeans(T_mean, n_H)
                         tau = calc_optical_depth(n_H, lambda_jeans_cm)
                         n_LW = calc_num_LW(tau)
@@ -331,7 +417,7 @@ n_H_range = 100
 x_mean = 1
 pdf = np.zeros([6, 100])
 x = np.zeros([6, 100])
-vel_disp = np.sqrt(np.log(1 + ((0.3 * mach_no)**2)))
+s = np.sqrt(np.log(1 + ((0.3 * mach_no)**2)))
 lambda_jeans_cm = np.zeros([6, 100])    # cm
 tau = np.zeros([6, 100])     #optical depth
 n_LW = np.zeros([6, 100])    #number of Lyman-Werner photons
@@ -349,7 +435,7 @@ for n_H_mean_ctr in range(100):
     for i in range(1, n_H_range):
         n_H[n_H_mean_ctr][i] = [n_H_mean_ctr][(np.logspace(-4, 5, 100) * i)] # [H] cm^-3
         x[n_H_mean_ctr][i] = np.log(n_H[n_H_mean_ctr][i]/n_H_mean)
-        pdf[n_H_mean_ctr][i] = make_pdf(x[n_H_mean_ctr][i], x_mean, vel_disp)
+        pdf[n_H_mean_ctr][i] = make_pdf(x[n_H_mean_ctr][i], x_mean, s)
         lambda_jeans_cm[n_H_mean_ctr][i] = calc_lambda_jeans(T_mean, n_H[n_H_mean_ctr][i])
         tau[n_H_mean_ctr][i] = calc_optical_depth(n_H[n_H_mean_ctr][i], lambda_jeans_cm[n_H_mean_ctr][i])
         n_LW[n_H_mean_ctr][i] = calc_num_LW(tau[n_H_mean_ctr][i])
