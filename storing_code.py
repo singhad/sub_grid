@@ -1,4 +1,148 @@
 '''
+    for a in range(0, len(n_H_mean_arr)):
+        n_H_mean = n_H_mean_arr[a]
+        for i in range(0, 1000):
+            s[i] = smin + i*ds
+            n_H[i] = n_H_mean * np.exp(s[i])
+            X_H2[i] = make_X_H2(n_H[i])
+            pdf[i] = make_pdf(s[i], s_bar, sigma_s)
+            tot_n_H_bar[i] = np.exp(s[i]) * pdf[i] * ds
+            X_H2_bar[i] = np.exp(s[i]) * pdf[i] * ds * X_H2[i]
+        #X_H2_bar_arr[a] = X_H2_bar
+    plotting3(s, pdf)
+
+'''
+
+"""
+# ---------------
+# Code to find integration and also plot multiple plots
+# ---------------
+
+import numpy as np
+import matplotlib.pyplot as plt
+import os
+
+def make_pdf(s, sigma_s, s_mean):
+    pdf = (1/np.sqrt(2*np.pi*(sigma_s**2))) * (np.exp(-0.5*(((s - s_mean)/sigma_s)**2)))
+    return pdf
+
+def make_X_H2(n_H, Z):
+    m_p = 1.672621777e-24  # g
+    T_mean = 10.    #K
+    K_b = 1.38064852e-16    # ergs K-1
+    G = 6.67408e-8          # dyne cm^2 g^-2
+    kappa = 1000 * m_p
+    DC = 1.7e-11
+    CC = 2.5e-17    #cm3 s-1
+    rad_field_outside = 1.0     #in solar units
+    exp_tau = np.exp(-kappa * n_H * ((np.sqrt(K_b * T_mean / m_p)) / np.sqrt(4* np.pi * G * n_H * m_p)))
+    numerator = DC * rad_field_outside * exp_tau
+    denominator = CC * Z * n_H
+    X_H2 = 1 / (2 + (numerator/denominator) )
+    return X_H2
+
+def plot_X_H2_bar_vs_n_H_bar(n_H_bar, X_H2_bar, label, value):
+    plt.plot(np.log10(n_H_bar), X_H2_bar, label =(label + '= ' + str(value)))
+    plt.xlabel('log(n_H_bar)')
+    plt.ylabel('X_H2_bar')
+    plt.legend()
+    plt.grid(b=True, which='both', axis='both')
+    plt.title('log(n_H_bar) vs X_H2_bar - varying ' + label)
+
+if __name__=='__main__':
+    path = 'multiple_plots'
+    os.makedirs(path, exist_ok=True)
+    os.chdir(path)
+    mach_no_arr = np.array([1., 5., 10., 15., 20., 50., 100.])
+    Z_arr = np.array([0.001, 0.01, 0.1, 1., 10., 100.])
+    n_H_mean_arr = np.array([1e-1, 1, 1e1, 1e2, 1e3, 1e4])
+    pdf = np.zeros(1000)
+    X_H2 = np.zeros(1000)
+    n_H2 = np.zeros(1000)
+    n_H_bar = np.zeros(1000)
+    tot_n_H_bar = np.zeros(1000)
+    X_H2_bar = np.zeros(1000)
+    smin = -4
+    smax = 5
+    ds = (smax - smin)/1000
+
+    choice = [1, 2, 3]
+    for ch in choice:
+        value = 0
+        label = ""
+        if ch == 1:
+            mach_no = 5
+            sigma_s = np.sqrt(np.log(1 + ((0.3 * mach_no)**2)))
+            s_mean = -0.5*(sigma_s**2)
+            n_H_mean = 100
+            label = "Metallicity "
+            for a in range(0, len(Z_arr)):
+                Z = Z_arr[a]
+                value = Z
+                tot_n_H_bar = np.zeros(1000)
+                X_H2 = np.zeros(1000)
+                for i in range(1, 1000):
+                    n_H = (np.logspace(-4, 5, 1000) * i)
+                    X_H2 = make_X_H2(n_H, Z)
+                    n_H2 = X_H2 * n_H
+                    s = smin + i*ds
+                    n_H_bar = n_H * np.exp(-s)
+                    pdf = make_pdf(s, sigma_s, s_mean)
+                    tot_n_H_bar += np.exp(s) * pdf * ds
+                    X_H2_bar = tot_n_H_bar * X_H2
+                plot_X_H2_bar_vs_n_H_bar(n_H_bar, X_H2_bar, label, value)
+            plt.savefig('log(n_H_bar)vsX_H2_bar__Z.png'.format())
+            plt.clf()
+        elif ch == 2:
+            Z = 1
+            n_H_mean = 100
+            label = "Mach no "
+            for b in range(0, len(mach_no_arr)):
+                mach_no = mach_no_arr[b]
+                sigma_s = np.sqrt(np.log(1 + ((0.3 * mach_no)**2)))
+                s_mean = -0.5*(sigma_s**2)
+                value = mach_no
+                tot_n_H_bar = np.zeros(1000)
+                X_H2 = np.zeros(1000)
+                for i in range(1, 1000):
+                    n_H = (np.logspace(-4, 5, 1000) * i)
+                    X_H2 = make_X_H2(n_H, Z)
+                    n_H2 = X_H2 * n_H
+                    s = smin + i*ds
+                    n_H_bar = n_H * np.exp(-s)
+                    pdf = make_pdf(s, sigma_s, s_mean)
+                    tot_n_H_bar += np.exp(s) * pdf * ds
+                    X_H2_bar = tot_n_H_bar * X_H2
+                plot_X_H2_bar_vs_n_H_bar(n_H_bar, X_H2_bar, label, value)
+            plt.savefig('log(n_H_bar)vsX_H2_bar__M.png'.format())
+            plt.clf()
+        elif ch == 3:
+            mach_no = 5
+            sigma_s = np.sqrt(np.log(1 + ((0.3 * mach_no)**2)))
+            s_mean = -0.5*(sigma_s**2)
+            Z = 1
+            label = "n_H_mean "
+            for c in range(0, len(n_H_mean_arr)):
+                n_H_mean = n_H_mean_arr[c]
+                value = n_H_mean
+                tot_n_H_bar = np.zeros(1000)
+                X_H2 = np.zeros(1000)
+                for i in range(1, 1000):
+                    n_H = (np.logspace(-4, 5, 1000) * i)
+                    X_H2 = make_X_H2(n_H, Z)
+                    n_H2 = X_H2 * n_H
+                    s = smin + i*ds
+                    n_H_bar = n_H * np.exp(-s)
+                    pdf = make_pdf(s, sigma_s, s_mean)
+                    tot_n_H_bar += np.exp(s) * pdf * ds
+                    X_H2_bar = tot_n_H_bar * X_H2
+                plot_X_H2_bar_vs_n_H_bar(n_H_bar, X_H2_bar, label, value)
+            plt.savefig('log(n_H_bar)vsX_H2_bar__n_H_mean.png'.format())
+            plt.clf()
+
+"""
+
+
 # ---------------
 # Working code for integration to find X_H2_bar
 # ---------------
@@ -32,7 +176,7 @@ def make_X_H2(n_H):
     return X_H2
 
 def plotting1(n_H, X_H2):
-    path = 'storing_code'
+    path = 'for X_H2'
     os.makedirs(path, exist_ok=True)
     os.chdir(path)
     #plotting X_H2 vs log(n_H)
@@ -44,14 +188,14 @@ def plotting1(n_H, X_H2):
     plt.savefig('log(n_H)vsX_H2.png'.format())
     plt.clf()
 
-def plotting2(n_H, X_H2_bar):
-    #plotting log(n_H) vs X_H2_bar
-    plt.plot(np.log10(n_H), X_H2_bar)
-    plt.xlabel('log(n_H)')
+def plotting2(n_H_bar, X_H2_bar):
+    #plotting log(n_H_bar) vs X_H2_bar
+    plt.plot(np.log10(n_H_bar), X_H2_bar)
+    plt.xlabel('log(n_H_bar)')
     plt.ylabel('X_H2_bar')
     plt.grid(b=True, which='both', axis='both')
-    plt.title('log(n_H) vs X_H2_bar')
-    plt.savefig(os.path.join('log(n_H)vsX_H2_bar.png'.format()))
+    plt.title('log(n_H_bar) vs X_H2_bar')
+    plt.savefig(os.path.join('log(n_H_bar)vsX_H2_bar.png'.format()))
     plt.clf()
 
 if __name__=='__main__':
@@ -59,6 +203,7 @@ if __name__=='__main__':
     pdf = np.zeros(1000)
     X_H2 = np.zeros(1000)
     n_H2 = np.zeros(1000)
+    n_H_bar = np.zeros(1000)
     tot_n_H_bar = np.zeros(1000)
     tot_n_H2_bar = np.zeros(1000)
     X_H2_bar = np.zeros(1000)
@@ -68,18 +213,19 @@ if __name__=='__main__':
     s = 0
     ds = (smax - smin)/1000
 
-#using user-defined trapezoidal functions
     for i in range(1, 1000):
         n_H = (np.logspace(-4, 5, 1000) * i) # [H] cm^-3
         X_H2 = make_X_H2(n_H)
         n_H2 = X_H2 * n_H
         s = smin + i*ds
         pdf = make_pdf(s)
+        n_H_bar = n_H * np.exp(-s)
         tot_n_H_bar += np.exp(s) * pdf * ds
         X_H2_bar += np.exp(s) * pdf * ds * X_H2
     plotting1(n_H, X_H2)
-    plotting2(n_H, X_H2_bar)
-'''
+    plotting2(n_H_bar, X_H2_bar)
+
+
 
 
 
