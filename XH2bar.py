@@ -40,10 +40,10 @@ def make_integral1():
     mach_no = 5
     sigma_s = np.sqrt(np.log(1 + ((0.3 * mach_no)**2)))
     s_bar = -0.5*(sigma_s**2)
-    smin = -3*sigma_s + s_bar
-    smax = 3*sigma_s + s_bar
+    smin = -4*sigma_s + s_bar
+    smax = 4*sigma_s + s_bar
     ds = (smax - smin)/1000
-    n_H_mean = 1e5
+    n_H_mean = 1e4
     Z = 1
     G_o = 1
     for i in range(0, 1000):
@@ -56,45 +56,12 @@ def make_integral1():
     #plotting(n_H, pdf, lambda_jeans, X_H2)
     return integral1
 
-def plotting(n_H, pdf, lambda_jeans, X_H2):
-    plt.plot(np.log10(n_H), pdf)
-    plt.xlabel('log(n_H)')
-    plt.ylabel('pdf')
-    plt.grid(b=True, which='both', axis='both')
-    plt.title('log(n_H) vs pdf')
-    plt.savefig(os.path.join('log(n_H)vspdf.png'.format()))
-    plt.clf()
-
-    plt.plot(np.log10(n_H), np.log10(pdf))
-    plt.xlabel('log(n_H)')
-    plt.ylabel('log(pdf)')
-    plt.grid(b=True, which='both', axis='both')
-    plt.title('log(n_H) vs log(pdf)')
-    plt.savefig(os.path.join('log(n_H)vslog(pdf).png'.format()))
-    plt.clf()
-
-    plt.plot(np.log10(lambda_jeans), np.log10(n_H))
-    plt.xlabel('log(lambda_jeans)')
-    plt.ylabel('log(n_H)')
-    plt.grid(b=True, which='both', axis='both')
-    plt.title('log(lambda_jeans) vs log(n_H)')
-    plt.savefig(os.path.join('log(lambda_jeans)vslog(n_H).png'.format()))
-    plt.clf()
-
-    plt.plot(np.log10(n_H), X_H2)
-    plt.xlabel('log(n_H)')
-    plt.ylabel('X_H2')
-    plt.grid(b=True, which='both', axis='both')
-    plt.title('log(n_H) vs X_H2')
-    plt.savefig('log(n_H)vsX_H2.png'.format())
-    plt.clf()
-
 def varying_M():
     fig, ax = plt.subplots()
     Z = 1
     G_o = 1
     mach_no_arr = np.array([1., 10., 100.])
-    n_H_mean_arr = np.array([1e1, 1e2, 2.5e2, 5e2, 7.5e2, 1e3, 2.5e3, 5e3, 1e4, 1e5, 1e6, 1e7])
+    n_H_mean_arr = np.array([1e-3, 1e-2, 1e-1, 1e1, 1e2, 2.5e2, 5e2, 7.5e2, 1e3, 2.5e3, 5e3, 1e4, 1e5, 1e6, 1e7])
     label = "M "
     color_arr = ['r','g','b']
     custom_lines = [Line2D([0], [0], color='r', lw=4),
@@ -105,8 +72,8 @@ def varying_M():
         color = str(color_arr[m])
         sigma_s = np.sqrt(np.log(1 + ((0.3 * mach_no)**2)))
         s_bar = -0.5*(sigma_s**2)
-        smin = -3*sigma_s + s_bar
-        smax = 3*sigma_s + s_bar
+        smin = -4*sigma_s + s_bar
+        smax = 4*sigma_s + s_bar
         ds = (smax - smin)/1000
         value = mach_no
         for y in range(0, len(n_H_mean_arr)):
@@ -129,6 +96,7 @@ def varying_M():
             plt.scatter(np.log10(n_H_mean), X_H2_bar[i], color=color)
     plt.xlabel('log(n_H_mean)')
     plt.ylabel('X_H2_bar')
+    plt.xlim(np.log10(1e-4), np.log10(1e9))
     plt.grid(b=True, which='both', axis='both')
     plt.title('log(n_H_mean) vs X_H2_bar - varying M')
     ax.legend(  custom_lines,
@@ -157,8 +125,8 @@ def varying_Z():
         color = str(color_arr[z])
         sigma_s = np.sqrt(np.log(1 + ((0.3 * mach_no)**2)))
         s_bar = -0.5*(sigma_s**2)
-        smin = -3*sigma_s + s_bar
-        smax = 3*sigma_s + s_bar
+        smin = -4*sigma_s + s_bar
+        smax = 4*sigma_s + s_bar
         ds = (smax - smin)/1000
         value = Z
         for y in range(0, len(n_H_mean_arr)):
@@ -209,8 +177,8 @@ def varying_G_o():
         color = str(color_arr[g])
         sigma_s = np.sqrt(np.log(1 + ((0.3 * mach_no)**2)))
         s_bar = -0.5*(sigma_s**2)
-        smin = -3*sigma_s + s_bar
-        smax = 3*sigma_s + s_bar
+        smin = -4*sigma_s + s_bar
+        smax = 4*sigma_s + s_bar
         ds = (smax - smin)/1000
         value = G_o
         for y in range(0, len(n_H_mean_arr)):
@@ -246,7 +214,7 @@ def varying_G_o():
     return s, smin, smax, sigma_s, n_H, lambda_jeans, X_H2, pdf, integral1, X_H2_bar
 
 if __name__=='__main__':
-    path = 'for X_H2'
+    path = 'for X_H2_bar'
     os.makedirs(path, exist_ok=True)
     os.chdir(path)
 
