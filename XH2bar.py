@@ -60,13 +60,14 @@ def varying_M():
     fig, ax = plt.subplots()
     Z = 1
     G_o = 1
-    mach_no_arr = np.array([1., 10., 100.])
-    n_H_mean_arr = np.array([1e-3, 1e-2, 1e-1, 1e1, 1e2, 2.5e2, 5e2, 7.5e2, 1e3, 2.5e3, 5e3, 1e4, 1e5, 1e6, 1e7])
+    mach_no_arr = np.array([1., 5., 10., 50.])
+    n_H_mean_arr = np.logspace(1, 5, 40)
     label = "M "
-    color_arr = ['r','g','b']
+    color_arr = ['r','g','b','y']
     custom_lines = [Line2D([0], [0], color='r', lw=4),
                     Line2D([0], [0], color='g', lw=4),
-                    Line2D([0], [0], color='b', lw=4)]
+                    Line2D([0], [0], color='b', lw=4),
+                    Line2D([0], [0], color='y', lw=4)]
     for m in range(0, len(mach_no_arr)):
         mach_no = mach_no_arr[m]
         color = str(color_arr[m])
@@ -96,13 +97,13 @@ def varying_M():
             plt.scatter(np.log10(n_H_mean), X_H2_bar[i], color=color)
     plt.xlabel('log(n_H_mean)')
     plt.ylabel('X_H2_bar')
-    plt.xlim(np.log10(1e-4), np.log10(1e9))
     plt.grid(b=True, which='both', axis='both')
-    plt.title('log(n_H_mean) vs X_H2_bar - varying M')
+    plt.title('log(n_H_mean) vs X_H2_bar - M=varied, Z=1, G_o=1')
     ax.legend(  custom_lines,
                 [   label + '= 1',
+                    label + '= 5',
                     label + '= 10',
-                    label + '= 100'  ],
+                    label + '= 50'  ],
                 loc = 'lower right'
                     )
     plt.savefig(os.path.join('log(n_H_mean)vsX_H2_bar--M.png'.format()))
@@ -113,13 +114,14 @@ def varying_Z():
     fig, ax = plt.subplots()
     mach_no = 5
     G_o = 1
-    Z_arr = np.array([0.001, 0.01, 1.])
-    n_H_mean_arr = np.array([1e1, 1e2, 2.5e2, 5e2, 7.5e2, 1e3, 2.5e3, 5e3, 1e4, 1e5, 1e6, 1e7])
+    Z_arr = np.array([0.001, 0.01, 0.1, 1.])
+    n_H_mean_arr = np.logspace(1, 5, 40)
     label = "Z "
-    color_arr = ['r','g','b']
+    color_arr = ['r','g','b','y']
     custom_lines = [Line2D([0], [0], color='r', lw=4),
                     Line2D([0], [0], color='g', lw=4),
-                    Line2D([0], [0], color='b', lw=4)]
+                    Line2D([0], [0], color='b', lw=4),
+                    Line2D([0], [0], color='y', lw=4)]
     for z in range(0, len(Z_arr)):
         Z = Z_arr[z]
         color = str(color_arr[z])
@@ -150,11 +152,12 @@ def varying_Z():
     plt.xlabel('log(n_H_mean)')
     plt.ylabel('X_H2_bar')
     plt.grid(b=True, which='both', axis='both')
-    plt.title('log(n_H_mean) vs X_H2_bar - varying Z')
+    plt.title('log(n_H_mean) vs X_H2_bar - M=5, Z=varied, G_o=1')
     ax.legend(  custom_lines,
                 [   label + '= 0.001',
                     label + '= 0.010',
-                    label + '= 1.00'  ],
+                    label + '= 0.100',
+                    label + '= 1.000'  ],
                 loc = 'lower right'
                     )
     plt.savefig(os.path.join('log(n_H_mean)vsX_H2_bar--Z.png'.format()))
@@ -165,13 +168,14 @@ def varying_G_o():
     fig, ax = plt.subplots()
     mach_no = 5
     Z = 1
-    G_o_arr = np.array([1., 10., 100.])
-    n_H_mean_arr = np.array([1e1, 1e2, 2.5e2, 5e2, 7.5e2, 1e3, 2.5e3, 5e3, 1e4, 1e5, 1e6, 1e7])
+    G_o_arr = np.array([1., 10., 50., 100.])
+    n_H_mean_arr = np.logspace(1, 5, 40)
     label = "G_o "
-    color_arr = ['r','g','b']
+    color_arr = ['r','g','b','y']
     custom_lines = [Line2D([0], [0], color='r', lw=4),
                     Line2D([0], [0], color='g', lw=4),
-                    Line2D([0], [0], color='b', lw=4)]
+                    Line2D([0], [0], color='b', lw=4),
+                    Line2D([0], [0], color='y', lw=4)]
     for g in range(0, len(G_o_arr)):
         G_o = G_o_arr[g]
         color = str(color_arr[g])
@@ -202,10 +206,11 @@ def varying_G_o():
     plt.xlabel('log(n_H_mean)')
     plt.ylabel('X_H2_bar')
     plt.grid(b=True, which='both', axis='both')
-    plt.title('log(n_H_mean) vs X_H2_bar - varying G_o')
+    plt.title('log(n_H_mean) vs X_H2_bar - M=5, Z=1, G_o=varied')
     ax.legend(  custom_lines,
                 [   label + '= 1',
                     label + '= 10',
+                    label + '= 50',
                     label + '= 100'  ],
                 loc = 'lower right'
                     )
