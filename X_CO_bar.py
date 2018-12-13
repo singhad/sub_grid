@@ -7,7 +7,7 @@ def make_pdf(s, s_bar, sigma_s):
     pdf = (1/np.sqrt(2*np.pi*(sigma_s**2))) * (np.exp(-0.5*(((s - s_bar)/sigma_s)**2)))
     return pdf
 
-def make_lambda_jeans(n_H, s):
+def calc_lambda_jeans(n_H):
     m_p = 1.672621777e-24   # g
     T_mean = 10.            #K
     K_b = 1.38064852e-16    # ergs K-1
@@ -15,28 +15,42 @@ def make_lambda_jeans(n_H, s):
     lambda_jeans = ((np.sqrt(K_b * T_mean / m_p)) / np.sqrt(4* np.pi * G * n_H * m_p))
     return lambda_jeans
 
-def make_X_H2(n_H, Z, G_o):
+def calc_n_LW(n_H, G_o, lambda_jeans):
     m_p = 1.672621777e-24   # g
-    T_mean = 10.            #K
-    K_b = 1.38064852e-16    # ergs K-1
-    G = 6.67408e-8          # dyne cm^2 g^-2
     kappa = 1000 * m_p
+    rad_field_outside = G_o #in solar units
+    exp_tau = np.exp(-kappa * n_H * lambda_jeans)
+    n_LW = rad_field_outside * exp_tau
+    return n_LW
+
+def calc_X_H2(n_H, Z, n_LW):
     DC = 1.7e-11
     CC = 2.5e-17            #cm3 s-1
-    rad_field_outside = G_o #in solar units
-    exp_tau = np.exp(-kappa * n_H * ((np.sqrt(K_b * T_mean / m_p)) / np.sqrt(4* np.pi * G * n_H * m_p)))
-    numerator = DC * rad_field_outside * exp_tau
+    numerator = DC * n_LW
     denominator = CC * Z * n_H
     X_H2 = 1 / (2 + (numerator/denominator) )
     return X_H2
 
-def make_integral1():
+def calc_X_CO(n_H, n_H2, n_LW):
+    rate_CHX = 5.e-10 * n_LW
+    rate_CO = 1.e-10 * n_LW
+    x0 = 2.e-4
+    k0 = 5.e-16 #cm3 s-1
+    k1 = 5.e-10 #cm3 s-1
+    factor_beta = rate_CHX/(n_H*k1*x0)
+    beta = 1./(1.+factor_beta)
+    factor_CO = rate_CO/(n_H2*k0*beta)
+    X_CO = 1./(1.+factor_CO)
+    return X_CO
+
+def calc_n_CO(n_H, X_CO):
+    abundance_Ctot = 1e-4 # n_C/n_H as defined by nucleosynthesis
+    return n_H * abundance_Ctot * X_CO # CO/cc
+
+def make_integral2():
     s = np.zeros(1000)
     pdf = np.zeros(1000)
-    lambda_jeans = np.zeros(1000)
-    X_H2 = np.zeros(1000)
-    n_H = np.zeros(1000)
-    integral1 = 0
+    integral2 = 0
     mach_no = 5
     sigma_s = np.sqrt(np.log(1 + ((0.3 * mach_no)**2)))
     s_bar = -0.5*(sigma_s**2)
@@ -48,13 +62,11 @@ def make_integral1():
     G_o = 1
     for i in range(0, 1000):
         s[i] = smin + i*ds
-        n_H = n_H_mean * np.exp(s)
-        lambda_jeans = make_lambda_jeans(n_H, s)
-        X_H2 = make_X_H2(n_H, Z, G_o)
         pdf = make_pdf(s, s_bar, sigma_s)
-        integral1 += np.exp(s[i]) * pdf[i] * ds   #this should be ~1
+        integral2 += np.exp(s[i]) * pdf[i] * ds   #this should be ~1
     #plotting(n_H, pdf, lambda_jeans, X_H2)
-    return integral1
+    return integral2
+
 
 def varying_M():
     fig, ax = plt.subplots()
@@ -84,21 +96,29 @@ def varying_M():
             lambda_jeans = np.zeros(1000)
             X_H2 = np.zeros(1000)
             n_H = np.zeros(1000)
-            integral1 = 0
-            X_H2_bar = np.zeros(1000)
+            n_LW = np.zeros(1000)
+            n_H2 = np.zeros(1000)
+            X_CO = np.zeros(1000)
+            n_CO = np.zeros(1000)
+            integral2 = 0
+            X_CO_bar = np.zeros(1000)
             for i in range(0, 1000):
                 s[i] = smin + i*ds
                 n_H[i] = n_H_mean * np.exp(s[i])
-                lambda_jeans[i] = make_lambda_jeans(n_H[i], s[i])
-                X_H2[i] = make_X_H2(n_H[i], Z, G_o)
+                lambda_jeans[i] = calc_lambda_jeans(n_H[i])
+                n_LW[i] = calc_n_LW(n_H[i], G_o, lambda_jeans[i])
+                X_H2[i] = calc_X_H2(n_H[i], Z, n_LW[i])
                 pdf[i] = make_pdf(s[i], s_bar, sigma_s)
-            integral1 = make_integral1()
-            X_H2_bar = integral1 * X_H2
-            plt.scatter(np.log10(n_H_mean), X_H2_bar[i], color=color)
+                n_H2[i] = n_H[i] * X_H2[i]
+                X_CO[i] = calc_X_CO(n_H[i], n_H2[i], n_LW[i])
+                n_CO[i] = calc_n_CO(n_H[i], X_CO[i])
+            integral2 = make_integral2()
+            X_CO_bar = integral2 * X_CO
+            plt.scatter(np.log10(n_H_mean), X_CO_bar[i], color=color)
     plt.xlabel('log(n_H_mean)')
-    plt.ylabel('X_H2_bar')
+    plt.ylabel('X_CO_bar')
     plt.grid(b=True, which='both', axis='both')
-    plt.title('log(n_H_mean) vs X_H2_bar - M=varied, Z=1, G_o=1')
+    plt.title('log(n_H_mean) vs X_CO_bar - M=varied, Z=1, G_o=1')
     ax.legend(  custom_lines,
                 [   label + '= 1',
                     label + '= 5',
@@ -106,9 +126,9 @@ def varying_M():
                     label + '= 50'  ],
                 loc = 'lower right'
                     )
-    plt.savefig(os.path.join('log(n_H_mean)vsX_H2_bar--M.png'.format()))
+    plt.savefig(os.path.join('log(n_H_mean)vsX_CO_bar--M.png'.format()))
     plt.clf()
-    return s, smin, smax, sigma_s, n_H, lambda_jeans, X_H2, pdf, integral1, X_H2_bar
+    return s, smin, smax, sigma_s, n_H, lambda_jeans, X_H2, pdf, n_H2, integral2, X_CO, n_CO, X_CO_bar
 
 def varying_Z():
     fig, ax = plt.subplots()
@@ -138,21 +158,29 @@ def varying_Z():
             lambda_jeans = np.zeros(1000)
             X_H2 = np.zeros(1000)
             n_H = np.zeros(1000)
-            integral1 = 0
-            X_H2_bar = np.zeros(1000)
+            n_LW = np.zeros(1000)
+            n_H2 = np.zeros(1000)
+            X_CO = np.zeros(1000)
+            n_CO = np.zeros(1000)
+            integral2 = 0
+            X_CO_bar = np.zeros(1000)
             for i in range(0, 1000):
                 s[i] = smin + i*ds
                 n_H[i] = n_H_mean * np.exp(s[i])
-                lambda_jeans[i] = make_lambda_jeans(n_H[i], s[i])
-                X_H2[i] = make_X_H2(n_H[i], Z, G_o)
+                lambda_jeans[i] = calc_lambda_jeans(n_H[i])
+                n_LW[i] = calc_n_LW(n_H[i], G_o, lambda_jeans[i])
+                X_H2[i] = calc_X_H2(n_H[i], Z, n_LW[i])
                 pdf[i] = make_pdf(s[i], s_bar, sigma_s)
-            integral1 = make_integral1()
-            X_H2_bar = integral1 * X_H2
-            plt.scatter(np.log10(n_H_mean), X_H2_bar[i], color=color)
+                n_H2[i] = n_H[i] * X_H2[i]
+                X_CO[i] = calc_X_CO(n_H[i], n_H2[i], n_LW[i])
+                n_CO[i] = calc_n_CO(n_H[i], X_CO[i])
+            integral2 = make_integral2()
+            X_CO_bar = integral2 * X_CO
+            plt.scatter(np.log10(n_H_mean), X_CO_bar[i], color=color)
     plt.xlabel('log(n_H_mean)')
-    plt.ylabel('X_H2_bar')
+    plt.ylabel('X_CO_bar')
     plt.grid(b=True, which='both', axis='both')
-    plt.title('log(n_H_mean) vs X_H2_bar - M=5, Z=varied, G_o=1')
+    plt.title('log(n_H_mean) vs X_CO_bar - M=5, Z=varied, G_o=1')
     ax.legend(  custom_lines,
                 [   label + '= 0.001',
                     label + '= 0.010',
@@ -160,9 +188,9 @@ def varying_Z():
                     label + '= 1.000'  ],
                 loc = 'lower right'
                     )
-    plt.savefig(os.path.join('log(n_H_mean)vsX_H2_bar--Z.png'.format()))
+    plt.savefig(os.path.join('log(n_H_mean)vsX_CO_bar--Z.png'.format()))
     plt.clf()
-    return s, smin, smax, sigma_s, n_H, lambda_jeans, X_H2, pdf, integral1, X_H2_bar
+    return s, smin, smax, sigma_s, n_H, lambda_jeans, X_H2, pdf, n_H2, integral2, X_CO, n_CO, X_CO_bar
 
 def varying_G_o():
     fig, ax = plt.subplots()
@@ -192,21 +220,29 @@ def varying_G_o():
             lambda_jeans = np.zeros(1000)
             X_H2 = np.zeros(1000)
             n_H = np.zeros(1000)
-            integral1 = 0
-            X_H2_bar = np.zeros(1000)
+            n_LW = np.zeros(1000)
+            n_H2 = np.zeros(1000)
+            X_CO = np.zeros(1000)
+            n_CO = np.zeros(1000)
+            integral2 = 0
+            X_CO_bar = np.zeros(1000)
             for i in range(0, 1000):
                 s[i] = smin + i*ds
                 n_H[i] = n_H_mean * np.exp(s[i])
-                lambda_jeans[i] = make_lambda_jeans(n_H[i], s[i])
-                X_H2[i] = make_X_H2(n_H[i], Z, G_o)
+                lambda_jeans[i] = calc_lambda_jeans(n_H[i])
+                n_LW[i] = calc_n_LW(n_H[i], G_o, lambda_jeans[i])
+                X_H2[i] = calc_X_H2(n_H[i], Z, n_LW[i])
                 pdf[i] = make_pdf(s[i], s_bar, sigma_s)
-            integral1 = make_integral1()
-            X_H2_bar = integral1 * X_H2
-            plt.scatter(np.log10(n_H_mean), X_H2_bar[i], color=color)
+                n_H2[i] = n_H[i] * X_H2[i]
+                X_CO[i] = calc_X_CO(n_H[i], n_H2[i], n_LW[i])
+                n_CO[i] = calc_n_CO(n_H[i], X_CO[i])
+            integral2 = make_integral2()
+            X_CO_bar = integral2 * X_CO
+            plt.scatter(np.log10(n_H_mean), X_CO_bar[i], color=color)
     plt.xlabel('log(n_H_mean)')
-    plt.ylabel('X_H2_bar')
+    plt.ylabel('X_CO_bar')
     plt.grid(b=True, which='both', axis='both')
-    plt.title('log(n_H_mean) vs X_H2_bar - M=5, Z=1, G_o=varied')
+    plt.title('log(n_H_mean) vs X_CO_bar - M=5, Z=1, G_o=varied')
     ax.legend(  custom_lines,
                 [   label + '= 1',
                     label + '= 10',
@@ -214,17 +250,17 @@ def varying_G_o():
                     label + '= 100'  ],
                 loc = 'lower right'
                     )
-    plt.savefig(os.path.join('log(n_H_mean)vsX_H2_bar--G_o.png'.format()))
+    plt.savefig(os.path.join('log(n_H_mean)vsX_CO_bar--G_o.png'.format()))
     plt.clf()
-    return s, smin, smax, sigma_s, n_H, lambda_jeans, X_H2, pdf, integral1, X_H2_bar
+    return s, smin, smax, sigma_s, n_H, lambda_jeans, X_H2, pdf, n_H2, integral2, X_CO, n_CO, X_CO_bar
 
 if __name__=='__main__':
-    path = 'for X_H2_bar'
+    path = 'for X_CO_bar'
     os.makedirs(path, exist_ok=True)
     os.chdir(path)
 
     # order of variables:
-    # s, smin, smax, sigma_s, n_H, lambda_jeans, X_H2, pdf, integral1, X_H2_bar
-    g1, g2, g3, g4, g5, g6, g7, g8, g9, g10 = varying_G_o()  #varying G_o
-    m1, m2, m3, m4, m5, m6, m7, m8, m9, m10 = varying_M()  #varying mach_no
-    z1, z2, z3, z4, z5, z6, z7, z8, z9, z10 = varying_Z()  #varying metallicity
+    # s, smin, smax, sigma_s, n_H, lambda_jeans, X_H2, pdf, n_H2, integral2, X_CO, n_CO, X_CO_bar
+    g1, g2, g3, g4, g5, g6, g7, g8, g9, g10, g11, g12, g13 = varying_G_o()  #varying G_o
+    m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13 = varying_M()  #varying mach_no
+    z1, z2, z3, z4, z5, z6, z7, z8, z9, z10, z11, z12, z13 = varying_Z()  #varying metallicity
