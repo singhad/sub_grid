@@ -69,7 +69,7 @@ from matplotlib.lines import Line2D
 import matplotlib.gridspec as gridspec
 
 def make_pdf(s, s_bar, sigma_s):
-    pdf = (1/np.sqrt(2*np.pi*(sigma_s**2))) * (np.exp(-0.5*(((s - s_bar)/sigma_s)**2))) #* np.sqrt(np.exp(s)/4)
+    pdf = (1/np.sqrt(2*np.pi*(sigma_s**2))) * (np.exp(-0.5*(((s - s_bar)/sigma_s)**2)))
     return pdf
 
 def get_evolution():
@@ -96,10 +96,12 @@ def get_evolution():
         smax = 4*sigma_s + s_bar
         ds = (smax - smin)/1000
         value = mach_no
-        n_H_mean = 1e4
+        n_H_mean = 1e2
         s = np.zeros(1000)
         pdf = np.zeros(1000)
         n_H = np.zeros(1000)
+        x = np.zeros(1000)
+        x_prime = np.zeros(1000)
         s_prime = np.zeros(1000)
         pdf_prime = np.zeros(1000)
         n_H_prime = np.zeros(1000)
@@ -115,12 +117,18 @@ def get_evolution():
         t = ratio * t_ff_2
         n_H_prime = n_H_mean * np.exp(s) * (1/((1-((t/t_ff_1)**2))**2))
         s_prime = np.log(n_H_prime/n_H_mean)
+        x = np.log10(n_H/n_H_mean)
+        x_prime = np.log10(n_H_prime/n_H_mean)
         pdf = make_pdf(s, s_bar, sigma_s)
         pdf_prime = make_pdf(s_prime, s_bar, sigma_s)
-        ax1.plot(np.log10(n_H_prime), pdf, color=color, ls='--')
-        ax2.plot(np.log10(n_H_prime), np.log10(pdf), color=color, ls='--')
-    ax1.plot(np.log10(n_H), pdf, color='k', ls='-')
-    ax2.plot(np.log10(n_H), np.log10(pdf), color='k', ls='-')
+        ax1.plot(x_prime, pdf, color=color, ls='--')
+        ax2.plot(x_prime, np.log10(pdf), color=color, ls='--')
+        ax1.set_xlim([-2, 4])
+        ax2.set_xlim([-2, 4])
+    ax1.plot(x, pdf, color='k', ls='-')
+    ax2.plot(x, np.log10(pdf), color='k', ls='-')
+    ax1.set_xlim([-2, 4])
+    ax2.set_xlim([-2, 4])
     plt.xlabel('log($n_H$)')
     ax1.set_ylabel('pdf')
     ax2.set_ylabel('log(pdf)')
