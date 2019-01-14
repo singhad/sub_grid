@@ -115,12 +115,17 @@ def get_evolution():
         t_ff_1 = np.sqrt((3 * np.pi)/(32 * G * n_H * m_p))
         t_ff_2 = np.sqrt((3 * np.pi)/(32 * G * n_H_mean * m_p))
         t = ratio * t_ff_2
-        n_H_prime = n_H_mean * np.exp(s) * (1/((1-((t/t_ff_1)**2))**2))
+        term0 = (1+(((t/t_ff_1)**2)*0.8614)) / ((1-((t/t_ff_1)**2))**2.8614)
+        term1 = ((1+((1.8614*((t/t_ff_1)**2))/(1-((t/t_ff_1)**2))))**1)
+        term2 = (-1*((t/t_ff_1)**2)/n_H) * ((2.8614/(1-((t/t_ff_1)**2))) + (0.8614/(1+(((t/t_ff_1)**2)*0.8614))))
+        term3 = (1.8614/(n_H*(1-((t/t_ff_1)**2))))
+        term = term3 + term2
+        n_H_prime = n_H_mean * np.exp(s) * term0
         s_prime = np.log(n_H_prime/n_H_mean)
         x = np.log10(n_H/n_H_mean)
         x_prime = np.log10(n_H_prime/n_H_mean)
         pdf = make_pdf(s, s_bar, sigma_s)
-        pdf_prime = make_pdf(s_prime, s_bar, sigma_s)
+        #pdf_prime = make_pdf(s_prime, s_bar, sigma_s)
         ax1.plot(x_prime, pdf, color=color, ls='--')
         ax2.plot(x_prime, np.log10(pdf), color=color, ls='--')
         ax1.set_xlim([-2, 4])
