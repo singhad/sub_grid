@@ -26,20 +26,13 @@ def calc_n_LW_ss(n_H, n_H2, G_o, lambda_jeans):
     m_p = 1.672621777e-24   # g
     kappa = 1000 * m_p
     rad_field_outside = G_o #in solar units
-    exp_tau_H = np.exp(-kappa * n_H * lambda_jeans)
-    term1 = (0.965/((1+((n_H2*lambda_jeans)/5e4))**2))
-    term2 = ( (0.035/np.sqrt(1+((n_H2*lambda_jeans)/5e4))) * np.exp(-1*np.sqrt(1+((n_H2*lambda_jeans)/5e4))/1180) )
-    exp_tau_H2 = term1 + term2
-    n_LW_ss = rad_field_outside * exp_tau_H * exp_tau_H2
-    return n_LW_ss, exp_tau_H2
-
-def calc_X_H2_ss(n_H, Z, n_LW_ss):
-    DC = 1.7e-11
-    CC = 2.5e-17            #cm3 s-1
-    numerator = DC * n_LW_ss
-    denominator = CC * Z * n_H
-    X_H2 = 1 / (2 + (numerator/denominator) )
-    return X_H2
+    exp_tau = np.exp(-kappa * n_H * lambda_jeans)
+    N_H2 = n_H2*lambda_jeans
+    term1 = (0.965/((1+(N_H2/5e14))**2))
+    term2 = ( (0.035/np.sqrt(1+(N_H2/5e14))) * np.exp(-1*np.sqrt(1+(N_H2/5e14))/1180) )
+    S_H2 = term1 + term2
+    n_LW_ss = rad_field_outside * exp_tau * S_H2
+    return n_LW_ss, S_H2, N_H2
 
 def calc_X_H2(n_H, Z, n_LW):
     DC = 1.7e-11
@@ -73,11 +66,11 @@ def CO_density():
     n_H = np.zeros(1000)
     n_LW = np.zeros(1000)
     n_LW_ss = np.zeros(1000)
-    exp_tau_H2 = np.zeros(1000)
+    S_H2 = np.zeros(1000)
     n_H2 = np.zeros(1000)
     X_CO = np.zeros(1000)
     n_CO = np.zeros(1000)
-    integral1 = 0
+    N_H2 = np.zeros(1000)
     mach_no = 5
     sigma_s = np.sqrt(np.log(1 + ((0.3 * mach_no)**2)))
     s_bar = -0.5*(sigma_s**2)
@@ -87,68 +80,31 @@ def CO_density():
     n_H_mean = 1e4
     Z = 1
     G_o = 1
-    flag = [None]*1000
-    n_LW_1 = np.zeros(1000)
-    n_LW_2 = np.zeros(1000)
-    n_LW_3 = np.zeros(1000)
-    n_LW_4 = np.zeros(1000)
-    n_LW_5 = np.zeros(1000)
-    X_H2_1 = np.zeros(1000)
-    X_H2_2 = np.zeros(1000)
-    X_H2_3 = np.zeros(1000)
-    X_H2_4 = np.zeros(1000)
-    X_H2_5 = np.zeros(1000)
-    n_H2_1 = np.zeros(1000)
-    n_H2_2 = np.zeros(1000)
-    n_H2_3 = np.zeros(1000)
-    n_H2_4 = np.zeros(1000)
-    n_H2_5 = np.zeros(1000)
-    exp_tau_H2_2 = np.zeros(1000)
-    exp_tau_H2_3 = np.zeros(1000)
-    exp_tau_H2_4 = np.zeros(1000)
-    exp_tau_H2_5 = np.zeros(1000)
+    X_H2_a = np.zeros(1000)
+    n_H2_a = np.zeros(1000)
 
     for i in range(0, 1000):
         s[i] = smin + i*ds
-        pdf[i] = make_pdf(s[i], s_bar, sigma_s)
-        n_H[i] = n_H_mean * np.exp(s[i])
-        lambda_jeans[i] = calc_lambda_jeans(n_H[i])
 
-        n_LW_1[i] = calc_n_LW(n_H[i], G_o, lambda_jeans[i])
-        X_H2_1[i] = calc_X_H2(n_H[i], Z, n_LW[i])
-        n_H2_1[i] = n_H[i] * X_H2_1[i]
+    pdf = make_pdf(s, s_bar, sigma_s)
+    n_H = n_H_mean * np.exp(s)
+    lambda_jeans = calc_lambda_jeans(n_H)
 
-        n_LW_ss[i], exp_tau_H2_2[i] = calc_n_LW_ss(n_H[i], n_H2_1[i], G_o, lambda_jeans[i])
-        X_H2_2[i] = calc_X_H2_ss(n_H[i], Z, n_LW_ss[i])
-        n_H2_2[i] = n_H[i] * X_H2_2[i]
+    n_LW = calc_n_LW(n_H, G_o, lambda_jeans)
+    X_H2_a = calc_X_H2(n_H, Z, n_LW)
+    n_H2_a = n_H * X_H2_a
 
-        n_LW_3[i], exp_tau_H2_3[i] = calc_n_LW_ss(n_H[i], n_H2_2[i], G_o, lambda_jeans[i])
-        X_H2_3[i] = calc_X_H2_ss(n_H[i], Z, n_LW_3[i])
-        n_H2_3[i] = n_H[i] * X_H2_3[i]
+    n_LW_ss, S_H2, N_H2 = calc_n_LW_ss(n_H, n_H2_a, G_o, lambda_jeans)
+    X_H2 = calc_X_H2(n_H, Z, n_LW_ss)
+    n_H2 = n_H * X_H2
 
-        n_LW_4[i], exp_tau_H2_4[i] = calc_n_LW_ss(n_H[i], n_H2_3[i], G_o, lambda_jeans[i])
-        X_H2_4[i] = calc_X_H2_ss(n_H[i], Z, n_LW_4[i])
-        n_H2_4[i] = n_H[i] * X_H2_4[i]
-
-        n_LW_5[i], exp_tau_H2_5[i] = calc_n_LW_ss(n_H[i], n_H2_4[i], G_o, lambda_jeans[i])
-        X_H2_5[i] = calc_X_H2_ss(n_H[i], Z, n_LW_5[i])
-        n_H2_5[i] = n_H[i] * X_H2_5[i]
-        if X_H2_1[i] == X_H2_5[i] :
-            flag[i] = 'yes'
-        else:
-            flag[i] = 'no'
-
-    n_LW= n_LW_5
-    X_H2 = X_H2_5
-    n_H2 = n_H2_5
-    exp_tau_H2 = exp_tau_H2_5
-    X_CO = calc_X_CO(n_H, n_H2_1, n_LW_1)
+    X_CO = calc_X_CO(n_H, n_H2_a, n_LW)
     n_CO = calc_n_CO(n_H, X_CO)
-    print(flag)
-    plotting(n_H, pdf, lambda_jeans, X_H2, X_CO, n_CO, exp_tau_H2)
-    return n_H, pdf, lambda_jeans, X_H2, X_CO, n_CO, exp_tau_H2
 
-def plotting(n_H, pdf, lambda_jeans, X_H2, X_CO, n_CO, exp_tau_H2):
+    plotting(n_H, pdf, lambda_jeans, X_H2, X_CO, n_CO, S_H2, N_H2)
+    return n_H, X_H2, n_LW, n_LW_ss, S_H2, N_H2
+
+def plotting(n_H, pdf, lambda_jeans, X_H2, X_CO, n_CO, S_H2, N_H2):
     plt.plot(np.log10(n_H), pdf)
     plt.xlabel('log(n_H)')
     plt.ylabel('pdf')
@@ -197,24 +153,16 @@ def plotting(n_H, pdf, lambda_jeans, X_H2, X_CO, n_CO, exp_tau_H2):
     plt.savefig('log(n_H)vsX_CO.png'.format())
     plt.clf()
 
-    plt.plot(np.log10(n_H), exp_tau_H2)
-    plt.xlabel('log(n_H)')
-    plt.ylabel('S(H2)')
+    plt.plot(np.log10(N_H2), S_H2)
+    plt.xlabel('log(N_H2)')
+    plt.ylabel('S_H2')
     plt.grid(b=True, which='both', axis='both')
-    plt.title("log(n_H) vs S(H2)-Draine's")
-    plt.savefig('log(n_H)vsexp_tau_H2.png'.format())
-    plt.clf()
-
-    plt.plot(n_H, exp_tau_H2)
-    plt.xlabel('n_H')
-    plt.ylabel('S(H2)')
-    plt.grid(b=True, which='both', axis='both')
-    plt.title("n_H vs S(H2)-Draine's")
-    plt.savefig('n_Hvsexp_tau_H2.png'.format())
+    plt.title("log(N_H2) vs S_H2")
+    plt.savefig('log(N_H2)vsS_H2.png'.format())
     plt.clf()
 
 if __name__=='__main__':
-    path = 'for X_CO_self_shielding'
+    path = 'for X_H2_self_shielding'
     os.makedirs(path, exist_ok=True)
     os.chdir(path)
-    n_H, pdf, lambda_jeans, X_H2, X_CO, n_CO, exp_tau_H2 = CO_density()
+    n_H, X_H2, n_LW, n_LW_ss, S_H2, N_H2 = CO_density()
