@@ -59,6 +59,61 @@ def calc_n_CO(n_H, X_CO):
     return n_H * abundance_Ctot * X_CO # CO/cc
 
 def CO_density():
+    n_LW_1 = np.zeros(1000)
+    n_LW_2 = np.zeros(1000)
+    n_LW_3 = np.zeros(1000)
+    n_LW_4 = np.zeros(1000)
+    n_LW_5 = np.zeros(1000)
+    n_LW_6 = np.zeros(1000)
+    n_LW_7 = np.zeros(1000)
+    n_LW_8 = np.zeros(1000)
+    n_LW_9 = np.zeros(1000)
+    n_LW_10 = np.zeros(1000)
+
+    X_H2_1 = np.zeros(1000)
+    X_H2_2 = np.zeros(1000)
+    X_H2_3 = np.zeros(1000)
+    X_H2_4 = np.zeros(1000)
+    X_H2_5 = np.zeros(1000)
+    X_H2_6 = np.zeros(1000)
+    X_H2_7 = np.zeros(1000)
+    X_H2_8 = np.zeros(1000)
+    X_H2_9 = np.zeros(1000)
+    X_H2_10 = np.zeros(1000)
+
+    n_H2_1 = np.zeros(1000)
+    n_H2_2 = np.zeros(1000)
+    n_H2_3 = np.zeros(1000)
+    n_H2_4 = np.zeros(1000)
+    n_H2_5 = np.zeros(1000)
+    n_H2_6 = np.zeros(1000)
+    n_H2_7 = np.zeros(1000)
+    n_H2_8 = np.zeros(1000)
+    n_H2_9 = np.zeros(1000)
+    n_H2_10 = np.zeros(1000)
+
+    S_H2_1 = np.zeros(1000)
+    S_H2_2 = np.zeros(1000)
+    S_H2_3 = np.zeros(1000)
+    S_H2_4 = np.zeros(1000)
+    S_H2_5 = np.zeros(1000)
+    S_H2_6 = np.zeros(1000)
+    S_H2_7 = np.zeros(1000)
+    S_H2_8 = np.zeros(1000)
+    S_H2_9 = np.zeros(1000)
+    S_H2_10 = np.zeros(1000)
+
+    N_H2_1 = np.zeros(1000)
+    N_H2_2 = np.zeros(1000)
+    N_H2_3 = np.zeros(1000)
+    N_H2_4 = np.zeros(1000)
+    N_H2_5 = np.zeros(1000)
+    N_H2_6 = np.zeros(1000)
+    N_H2_7 = np.zeros(1000)
+    N_H2_8 = np.zeros(1000)
+    N_H2_9 = np.zeros(1000)
+    N_H2_10 = np.zeros(1000)
+
     s = np.zeros(1000)
     pdf = np.zeros(1000)
     lambda_jeans = np.zeros(1000)
@@ -93,24 +148,58 @@ def CO_density():
     n_LW = calc_n_LW(n_H, G_o, lambda_jeans)
     X_H2_a = calc_X_H2(n_H, Z, n_LW)
     n_H2_a = n_H * X_H2_a
+    a_1 = X_H2_a
+    a_2 = n_H2_a
 
-    
-    ctr = 0
-    if ctr < 5:
-        n_LW_ss, S_H2, N_H2 = calc_n_LW_ss(n_H, n_H2_a, G_o, lambda_jeans)
-        X_H2 = calc_X_H2(n_H, Z, n_LW_ss)
-        n_H2 = n_H * X_H2
-        ctr += 1
-        X_H2_a = X_H2
-        n_H2_a = n_H2
+    n_LW_1, S_H2_1, N_H2_1 = calc_n_LW_ss(n_H, n_H2_a, G_o, lambda_jeans)
+    X_H2_1 = calc_X_H2(n_H, Z, n_LW_1)
+    n_H2_1 = n_H * X_H2_1
 
-    if
+    n_LW_2, S_H2_2, N_H2_2 = calc_n_LW_ss(n_H, n_H2_1, G_o, lambda_jeans)
+    X_H2_2 = calc_X_H2(n_H, Z, n_LW_2)
+    n_H2_2 = n_H * X_H2_2
+
+    n_LW_3, S_H2_3, N_H2_3 = calc_n_LW_ss(n_H, n_H2_2, G_o, lambda_jeans)
+    X_H2_3 = calc_X_H2(n_H, Z, n_LW_3)
+    n_H2_3 = n_H * X_H2_3
+
+    n_LW_4, S_H2_4, N_H2_4 = calc_n_LW_ss(n_H, n_H2_3, G_o, lambda_jeans)
+    X_H2_4 = calc_X_H2(n_H, Z, n_LW_4)
+    n_H2_4 = n_H * X_H2_4
+
+    n_LW_5, S_H2_5, N_H2_5 = calc_n_LW_ss(n_H, n_H2_4, G_o, lambda_jeans)
+    X_H2_5 = calc_X_H2(n_H, Z, n_LW_5)
+    n_H2_5 = n_H * X_H2_5
+
+    n_LW_6, S_H2_6, N_H2_6 = calc_n_LW_ss(n_H, n_H2_5, G_o, lambda_jeans)
+    X_H2_6 = calc_X_H2(n_H, Z, n_LW_6)
+    n_H2_6 = n_H * X_H2_6
+
+    n_LW_7, S_H2_7, N_H2_7 = calc_n_LW_ss(n_H, n_H2_6, G_o, lambda_jeans)
+    X_H2_7 = calc_X_H2(n_H, Z, n_LW_7)
+    n_H2_7 = n_H * X_H2_7
+
+    n_LW_8, S_H2_8, N_H2_8 = calc_n_LW_ss(n_H, n_H2_7, G_o, lambda_jeans)
+    X_H2_8 = calc_X_H2(n_H, Z, n_LW_8)
+    n_H2_8 = n_H * X_H2_8
+
+    n_LW_9, S_H2_9, N_H2_9 = calc_n_LW_ss(n_H, n_H2_8, G_o, lambda_jeans)
+    X_H2_9 = calc_X_H2(n_H, Z, n_LW_9)
+    n_H2_9 = n_H * X_H2_9
+
+    n_LW_10, S_H2_10, N_H2_10 = calc_n_LW_ss(n_H, n_H2_9, G_o, lambda_jeans)
+    X_H2_10 = calc_X_H2(n_H, Z, n_LW_10)
+    n_H2_10 = n_H * X_H2_10
+
+    n_LW_ss, S_H2, N_H2 = calc_n_LW_ss(n_H, n_H2_10, G_o, lambda_jeans)
+    X_H2 = calc_X_H2(n_H, Z, n_LW_ss)
+    n_H2 = n_H * X_H2
 
     X_CO = calc_X_CO(n_H, n_H2_a, n_LW)
     n_CO = calc_n_CO(n_H, X_CO)
 
     plotting(n_H, pdf, lambda_jeans, X_H2, X_CO, n_CO, S_H2, N_H2)
-    return n_H, X_H2, n_LW, n_LW_ss, S_H2, N_H2
+    return n_H, n_H2, X_H2, n_LW, n_LW_ss, S_H2, N_H2, n_LW_1, n_LW_2, n_LW_3, n_LW_4, n_LW_5, n_LW_6, n_LW_7, n_LW_8, n_LW_9, n_LW_10, X_H2_1, X_H2_2, X_H2_3, X_H2_4, X_H2_5, X_H2_6, X_H2_7, X_H2_8, X_H2_9, X_H2_10, n_H2_1, n_H2_2, n_H2_3, n_H2_4, n_H2_5, n_H2_6, n_H2_7, n_H2_8, n_H2_9, n_H2_10, X_H2_a, n_H2_a
 
 def plotting(n_H, pdf, lambda_jeans, X_H2, X_CO, n_CO, S_H2, N_H2):
     plt.plot(np.log10(n_H), pdf)
@@ -173,4 +262,4 @@ if __name__=='__main__':
     path = 'for X_H2_self_shielding'
     os.makedirs(path, exist_ok=True)
     os.chdir(path)
-    n_H, X_H2, n_LW, n_LW_ss, S_H2, N_H2 = CO_density()
+    n_H, n_H2, X_H2, n_LW, n_LW_ss, S_H2, N_H2, n_LW_1, n_LW_2, n_LW_3, n_LW_4, n_LW_5, n_LW_6, n_LW_7, n_LW_8, n_LW_9, n_LW_10, X_H2_1, X_H2_2, X_H2_3, X_H2_4, X_H2_5, X_H2_6, X_H2_7, X_H2_8, X_H2_9, X_H2_10, n_H2_1, n_H2_2, n_H2_3, n_H2_4, n_H2_5, n_H2_6, n_H2_7, n_H2_8, n_H2_9, n_H2_10, X_H2_a, n_H2_a = CO_density()
