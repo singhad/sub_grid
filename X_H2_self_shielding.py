@@ -94,9 +94,17 @@ def CO_density():
     X_H2_a = calc_X_H2(n_H, Z, n_LW)
     n_H2_a = n_H * X_H2_a
 
-    n_LW_ss, S_H2, N_H2 = calc_n_LW_ss(n_H, n_H2_a, G_o, lambda_jeans)
-    X_H2 = calc_X_H2(n_H, Z, n_LW_ss)
-    n_H2 = n_H * X_H2
+    
+    ctr = 0
+    if ctr < 5:
+        n_LW_ss, S_H2, N_H2 = calc_n_LW_ss(n_H, n_H2_a, G_o, lambda_jeans)
+        X_H2 = calc_X_H2(n_H, Z, n_LW_ss)
+        n_H2 = n_H * X_H2
+        ctr += 1
+        X_H2_a = X_H2
+        n_H2_a = n_H2
+
+    if
 
     X_CO = calc_X_CO(n_H, n_H2_a, n_LW)
     n_CO = calc_n_CO(n_H, X_CO)
