@@ -129,10 +129,10 @@ def CO_density():
     mach_no = 5
     sigma_s = np.sqrt(np.log(1 + ((0.3 * mach_no)**2)))
     s_bar = -0.5*(sigma_s**2)
-    smin = -4*sigma_s + s_bar
-    smax = 4*sigma_s + s_bar
+    smin = -7*sigma_s + s_bar
+    smax = 7*sigma_s + s_bar
     ds = (smax - smin)/1000
-    n_H_mean = 1e4
+    n_H_mean = 100
     Z = 1
     G_o = 1
     X_H2_a = np.zeros(1000)
@@ -148,8 +148,6 @@ def CO_density():
     n_LW = calc_n_LW(n_H, G_o, lambda_jeans)
     X_H2_a = calc_X_H2(n_H, Z, n_LW)
     n_H2_a = n_H * X_H2_a
-    a_1 = X_H2_a
-    a_2 = n_H2_a
 
     n_LW_1, S_H2_1, N_H2_1 = calc_n_LW_ss(n_H, n_H2_a, G_o, lambda_jeans)
     X_H2_1 = calc_X_H2(n_H, Z, n_LW_1)
