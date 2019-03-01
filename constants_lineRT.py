@@ -16,6 +16,7 @@ G_cgs = 6.67259e-8 #cm^3 g^-1 s^-2        # gravitational constant
 
 mH_cgs = 1.6737236e-24 # g                # hydrogen mass
 MH = 1.6737236e-27 # kg                # hydrogen mass
+m_p = 1.672621777e-24   # g             #mass of proton
 
 PC = 3.0857e16 #m                    # 1 parsec
 AU_cgs = 1.49597871e13 #cm                # 1 astronomical unit
@@ -23,5 +24,6 @@ AU_cgs = 1.49597871e13 #cm                # 1 astronomical unit
 yr_cgs = 3.1556926e7 #s                   # 1 year
 
 MSUN = 1.989e30 #kg                    # solar mass
+L_sun = 2.3892497766e+45 #eV/s         #one nominal solar luminosity
 
 eV = 6.241509e18 #J

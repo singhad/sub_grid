@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import copy
+from matplotlib.ticker import FormatStrFormatter as ticks
 
 from constants_lineRT import *
 
@@ -61,7 +62,7 @@ def read_file(species):
         i = int(words[1]) - 1
         j = int(words[2]) - 1
         A[i][j] = float(words[3])  # s^-1
-        freq[i][j] = float(words[4]) #* 1e9  # GHz -> Hz
+        freq[i][j] = float(words[4]) * 1e9  # GHz -> Hz
         freq[j][i] = freq[i][j]
     # compute B-coefficient via Einstein relations
     # Bij = coeff for stimulated emission, Bji = coeff for extinction (j<i)
@@ -69,7 +70,7 @@ def read_file(species):
     for i in range(0, num_lvls):
         for j in range(0, i):
             if A[i][j] != 0:
-                B[i][j] = A[i][j] * (c_si**2) / \
+                B[i][j] = A[i][j] * (c_cgs**2) / \
                     (2*h_ev * (freq[i][j])**3)  # m2/(eV*s)
                 B[j][i] = B[i][j] * g[i]/g[j]
 
@@ -93,13 +94,13 @@ def calc_source_func(T, nu_ij):
     if nu_ij==0.:
         return 0.
     else:
-        x = h_si*nu_ij/(kb_si*T)
-        # units eV*s * Hz3 / (m2/s2) = eV * s3 * Hz3 * m-2 = eV/s/Hz/m2
-        S_nu = 2.0*h_ev*(nu_ij**3)/(c**2) / (np.exp(x)-1.0)
+        x = h_ev*nu_ij/(kb_ev*T)
+        # units eV*s * Hz3 / (cm2/s2) = eV * s3 * Hz3 * cm-2 = eV/s/Hz/cm2
+        S_nu = 2.0*h_ev*(nu_ij**3)/(c_cgs**2) / (np.exp(x)-1.0)
         return S_nu
 
 def calc_extinction(T, n_j, nu_ij, B_ji):
-    x = h_si*nu_ij/(kb_si*T)
+    x = h_ev*nu_ij/(kb_ev*T)
     return (h_ev/(4*np.pi)) * nu_ij * n_j * B_ji * (1.0 - np.exp(-1*x))
 
 def calc_emissivity(extinction, S):
@@ -110,20 +111,28 @@ def make_pdf(s, s_bar, sigma_s):
     return pdf
 
 def calc_lambda_jeans(n_H):
-    m_p = 1.672621777e-24   # g
     T_mean = 10.            #K
-    K_b = 1.38064852e-16    # ergs K-1
-    G = 6.67408e-8          # dyne cm^2 g^-2
-    lambda_jeans = ((np.sqrt(K_b * T_mean / m_p)) / np.sqrt(4* np.pi * G * n_H * m_p))
+    lambda_jeans = ((np.sqrt(kb_ev * T_mean / m_p)) / np.sqrt(4* np.pi * G_cgs * n_H * m_p))
     return lambda_jeans
 
 def calc_n_LW(n_H, G_o, lambda_jeans):
-    m_p = 1.672621777e-24   # g
     kappa = 1000 * m_p
     rad_field_outside = G_o #in solar units
     exp_tau = np.exp(-kappa * n_H * lambda_jeans)
     n_LW = rad_field_outside * exp_tau
     return n_LW
+
+def calc_n_LW_ss(n_H, n_H2, G_o, lambda_jeans):
+    m_p = 1.672621777e-24   # g
+    kappa = 1000 * m_p
+    rad_field_outside = G_o #in solar units
+    exp_tau = np.exp(-kappa * n_H * lambda_jeans)
+    N_H2 = n_H2*lambda_jeans
+    term1 = (0.965/((1+(N_H2/5e14))**2))
+    term2 = ( (0.035/np.sqrt(1+(N_H2/5e14))) * np.exp(-1*np.sqrt(1+(N_H2/5e14))/1180) )
+    S_H2 = term1 + term2
+    n_LW_ss = rad_field_outside * exp_tau * S_H2
+    return n_LW_ss, S_H2, N_H2
 
 def calc_X_H2(n_H, Z, n_LW):
     DC = 1.7e-11
@@ -140,7 +149,10 @@ def calc_stats():
     X_H2 = np.zeros(1000)
     n_H = np.zeros(1000)
     n_LW = np.zeros(1000)
+    n_LW_ss = np.zeros(1000)
     n_H2 = np.zeros(1000)
+    S_H2 = np.zeros(1000)
+    N_H2 = np.zeros(1000)
     mach_no = 5
     sigma_s = np.sqrt(np.log(1 + ((0.3 * mach_no)**2)))
     s_bar = -0.5*(sigma_s**2)
@@ -152,16 +164,50 @@ def calc_stats():
     G_o = 1
     for i in range(0, 1000):
         s[i] = smin + i*ds
-    pdf = make_pdf(s, s_bar, sigma_s)
-    n_H = n_H_mean * np.exp(s)
-    lambda_jeans = calc_lambda_jeans(n_H)
-    n_LW = calc_n_LW(n_H, G_o, lambda_jeans)
-    X_H2 = calc_X_H2(n_H, Z, n_LW)
-    n_H2 = n_H * X_H2
+        pdf = make_pdf(s, s_bar, sigma_s)
+        n_H = n_H_mean * np.exp(s)
+        lambda_jeans = calc_lambda_jeans(n_H)
+        n_LW = calc_n_LW(n_H, G_o, lambda_jeans)
+        X_H2_a = calc_X_H2(n_H, Z, n_LW)
+        n_H2_a = n_H * X_H2_a
+        n_LW_1, S_H2_1, N_H2_1 = calc_n_LW_ss(n_H, n_H2_a, G_o, lambda_jeans)
+        X_H2_1 = calc_X_H2(n_H, Z, n_LW_1)
+        n_H2_1 = n_H * X_H2_1
+        n_LW_2, S_H2_2, N_H2_2 = calc_n_LW_ss(n_H, n_H2_1, G_o, lambda_jeans)
+        X_H2_2 = calc_X_H2(n_H, Z, n_LW_2)
+        n_H2_2 = n_H * X_H2_2
+        n_LW_3, S_H2_3, N_H2_3 = calc_n_LW_ss(n_H, n_H2_2, G_o, lambda_jeans)
+        X_H2_3 = calc_X_H2(n_H, Z, n_LW_3)
+        n_H2_3 = n_H * X_H2_3
+        n_LW_4, S_H2_4, N_H2_4 = calc_n_LW_ss(n_H, n_H2_3, G_o, lambda_jeans)
+        X_H2_4 = calc_X_H2(n_H, Z, n_LW_4)
+        n_H2_4 = n_H * X_H2_4
+        n_LW_5, S_H2_5, N_H2_5 = calc_n_LW_ss(n_H, n_H2_4, G_o, lambda_jeans)
+        X_H2_5 = calc_X_H2(n_H, Z, n_LW_5)
+        n_H2_5 = n_H * X_H2_5
+        n_LW_6, S_H2_6, N_H2_6 = calc_n_LW_ss(n_H, n_H2_5, G_o, lambda_jeans)
+        X_H2_6 = calc_X_H2(n_H, Z, n_LW_6)
+        n_H2_6 = n_H * X_H2_6
+        n_LW_7, S_H2_7, N_H2_7 = calc_n_LW_ss(n_H, n_H2_6, G_o, lambda_jeans)
+        X_H2_7 = calc_X_H2(n_H, Z, n_LW_7)
+        n_H2_7 = n_H * X_H2_7
+        n_LW_8, S_H2_8, N_H2_8 = calc_n_LW_ss(n_H, n_H2_7, G_o, lambda_jeans)
+        X_H2_8 = calc_X_H2(n_H, Z, n_LW_8)
+        n_H2_8 = n_H * X_H2_8
+        n_LW_9, S_H2_9, N_H2_9 = calc_n_LW_ss(n_H, n_H2_8, G_o, lambda_jeans)
+        X_H2_9 = calc_X_H2(n_H, Z, n_LW_9)
+        n_H2_9 = n_H * X_H2_9
+        n_LW_10, S_H2_10, N_H2_10 = calc_n_LW_ss(n_H, n_H2_9, G_o, lambda_jeans)
+        X_H2_10 = calc_X_H2(n_H, Z, n_LW_10)
+        n_H2_10 = n_H * X_H2_10
+        n_LW_ss, S_H2, N_H2 = calc_n_LW_ss(n_H, n_H2_10, G_o, lambda_jeans)
+        X_H2 = calc_X_H2(n_H, Z, n_LW_ss)
+        n_H2 = n_H * X_H2
 
     return n_H, n_H2, X_H2, lambda_jeans
 
 def plotting(L, n_H, ni, source_func, extinction, emissivity, n_H2, X_H2):
+    fig, ax = plt.subplots()
     i = 2
     j = 1
     #for m in range(0,1000):
@@ -169,35 +215,28 @@ def plotting(L, n_H, ni, source_func, extinction, emissivity, n_H2, X_H2):
     plt.xlabel('n_H')
     plt.ylabel('L/$L_{sun}$')
     plt.grid(b=True, which='both', axis='both')
-    plt.title('n_H vs L/$L_{sun}$')
-    plt.savefig(os.path.join('n_HvsL.png'.format()))
+    ax.yaxis.set_major_formatter(ticks('%.2f'))
+    plt.title('n_H vs (L/$L_{sun}$)')
+    plt.savefig(os.path.join('n_HvsL.png'.format()), dpi= 'figure', bbox_inches= 'tight')
     plt.clf()
 
     plt.plot(np.log10(n_H), L[i][j])
     plt.xlabel('log(n_H)')
-    plt.ylabel('L/$L_{sun}$')
+    plt.ylabel('L/$L_{sun}$)')
     plt.grid(b=True, which='both', axis='both')
-    plt.title('log(n_H) vs L/$L_{sun}$')
-    plt.savefig(os.path.join('log(n_H)vsL.png'.format()))
+    ax.yaxis.set_major_formatter(ticks('%.2f'))
+    plt.title('log(n_H) vs (L/$L_{sun}$)')
+    plt.savefig(os.path.join('log(n_H)vsL.png'.format()), dpi= 'figure', bbox_inches= 'tight')
     plt.clf()
 
     plt.plot(np.log10(n_H), np.log10(L[i][j]))
     plt.xlabel('log(n_H)')
-    plt.ylabel('log(L/$L_{sun}$')
+    plt.ylabel('log(L/$L_{sun}$)')
     plt.grid(b=True, which='both', axis='both')
-    plt.title('log(n_H) vs log(L/$L_{sun}$')
+    ax.yaxis.set_major_formatter(ticks('%.1f'))
+    plt.title('log(n_H) vs log(L/$L_{sun}$)')
     plt.savefig(os.path.join('log(n_H)vslog(L).png'.format()))
     plt.clf()
-
-    for z in range(0,1000):
-        plt.plot(ni[i], L[i][j][z])
-    plt.xlabel('ni')
-    plt.ylabel('L/$L_{sun}$')
-    plt.grid(b=True, which='both', axis='both')
-    plt.title('ni vs L/$L_{sun}$')
-    plt.savefig(os.path.join('nivsL.png'.format()))
-    plt.clf()
-
 
 if __name__ == '__main__':
     path = 'for RT_LTE'
@@ -209,7 +248,6 @@ if __name__ == '__main__':
     extinction = np.zeros((num_lvls, num_lvls))
     emissivity = np.zeros((num_lvls, num_lvls))
     L = np.zeros((num_lvls, num_lvls, 1000))
-    L_sun = 3.828e26
     #calculate LTE occupation numbers with partition function method
     ni = calc_lvl_pops_partion(T, num_lvls, g, E)
     for i in range(0, num_lvls):
