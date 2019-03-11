@@ -25,5 +25,7 @@ yr_cgs = 3.1556926e7 #s                   # 1 year
 
 MSUN = 1.989e30 #kg                    # solar mass
 L_sun = 2.3892497766e+45 #eV/s         #one nominal solar luminosity
+L_sun_watts = 3.826e26 #Watts = J/s    #one nominal solar luminosity
 
-eV = 6.241509e18 #J
+eV = 1.60217733e-19 #J
+J = 6.241509e18 #eV

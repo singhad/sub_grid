@@ -197,7 +197,7 @@ def CO_density():
     n_CO = calc_n_CO(n_H, X_CO)
 
     plotting(n_H, pdf, lambda_jeans, X_H2, X_CO, n_CO, S_H2, N_H2)
-    return n_H, n_H2, X_H2, n_LW, n_LW_ss, S_H2, N_H2, n_LW_1, n_LW_2, n_LW_3, n_LW_4, n_LW_5, n_LW_6, n_LW_7, n_LW_8, n_LW_9, n_LW_10, X_H2_1, X_H2_2, X_H2_3, X_H2_4, X_H2_5, X_H2_6, X_H2_7, X_H2_8, X_H2_9, X_H2_10, n_H2_1, n_H2_2, n_H2_3, n_H2_4, n_H2_5, n_H2_6, n_H2_7, n_H2_8, n_H2_9, n_H2_10, X_H2_a, n_H2_a
+    return n_H, pdf, n_H2, X_H2, n_LW, n_LW_ss, S_H2, N_H2, X_H2_a, n_H2_a, lambda_jeans, X_CO, n_CO
 
 def plotting(n_H, pdf, lambda_jeans, X_H2, X_CO, n_CO, S_H2, N_H2):
     plt.plot(np.log10(n_H), pdf)
@@ -260,4 +260,4 @@ if __name__=='__main__':
     path = 'for X_H2_self_shielding'
     os.makedirs(path, exist_ok=True)
     os.chdir(path)
-    n_H, n_H2, X_H2, n_LW, n_LW_ss, S_H2, N_H2, n_LW_1, n_LW_2, n_LW_3, n_LW_4, n_LW_5, n_LW_6, n_LW_7, n_LW_8, n_LW_9, n_LW_10, X_H2_1, X_H2_2, X_H2_3, X_H2_4, X_H2_5, X_H2_6, X_H2_7, X_H2_8, X_H2_9, X_H2_10, n_H2_1, n_H2_2, n_H2_3, n_H2_4, n_H2_5, n_H2_6, n_H2_7, n_H2_8, n_H2_9, n_H2_10, X_H2_a, n_H2_a = CO_density()
+    n_H, pdf, n_H2, X_H2, n_LW, n_LW_ss, S_H2, N_H2, X_H2_a, n_H2_a, lambda_jeans, X_CO, n_CO = CO_density()

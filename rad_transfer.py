@@ -3,9 +3,10 @@ import matplotlib.pyplot as plt
 import os
 import copy
 from matplotlib.ticker import FormatStrFormatter as ticks
+from scipy.special import erf
 
 from constants_lineRT import *
-from X_H2_self_shielding import *
+
 
 def get_filename(species):
     # filename is already given
@@ -51,7 +52,7 @@ def read_file(species):
     g = []
     for l in range(num_lvls):
         words = f.readline().split()
-        E.append(float(words[1]) * 100.*c_si*h_ev)  # cm^-1 -> eV
+        E.append(float(words[1]) * c_cgs*h_ev)  # cm^-1 -> eV
         g.append(float(words[2]))
     f.readline()
     num_trans = int(f.readline())  # number of radiative transistions
@@ -73,7 +74,7 @@ def read_file(species):
         for j in range(0, i):
             if A[i][j] != 0:
                 B[i][j] = A[i][j] * (c_cgs**2) / \
-                    (2*h_ev * (freq[i][j])**3)  # m2/(eV*s)
+                    (2*h_ev * (freq[i][j])**3)  # cm2/(eV*s)
                 B[j][i] = B[i][j] * g[i]/g[j]
     # number of collision partners in the data file
     f.readline()
@@ -119,7 +120,7 @@ def read_file(species):
     f.close()
     C_all = np.array(C_all)
     temps_all = np.array(temps_all)
-    return mu, num_lvls, np.array(E), np.array(g), freq, A, B, C_all, num_partners, temps_all
+    return mu, num_lvls, np.array(E), np.array(g), np.array(freq), np.array(A), np.array(B), C_all, num_partners, temps_all
 
 
 def partion_function(T, num_lvls, g, E):
@@ -137,16 +138,48 @@ def calc_lvl_pops_partion(T, num_lvls, g, E):
     return np.array(ni)
 
 
-def calc_extinction(T, n_i, n_j, nu_ij, B_ij, B_ji):
-    x = h_ev*nu_ij/(kb_ev*T)
-    #(h_ev/(4*np.pi)) * nu_ij * n_j * B_ji * (1.0 - np.exp(-1*x))
-    extinction = h_ev * nu_ij * (n_j*B_ji - n_i*B_ij) / (4*np.pi)
-    return extinction
+''' Integrated line profile over [freq_a, freq_b]
+    This is basically the integration of a Gaussian distribution
+    C sqrt(pi) int_p^q exp(-(C*x)**2) dx = 0.5 * (erf(q*C) - erf(p*C))
+    with C = 1/((sqrt(2)*sigma) and sigma = therm_a * freq_center/(sqrt(2)*c)
+'''
 
 
-def calc_emissivity(nu_ij, n_i, A_ij):
-    emissivity = h_ev * nu_ij * n_i * A_ij / (4*np.pi)
+def integrate_thermal_profile(freq_a, freq_b, freq_center, T, moleculeMass, v_los=0.):
+    # doppler shift
+    new_center = freq_center * (1. + v_los/c_cgs)
+    # shift integration limits so line is centered on around 0
+    a = freq_a - new_center
+    b = freq_b - new_center
+    # calc the thermal width of the line
+    therm_a = np.sqrt(2.*kb_cgs*T/(moleculeMass*mH_cgs))
+    # calc the integral
+    C = c_cgs / (therm_a * freq_center)
+    return 0.5 * (erf(b*C) - erf(a*C))
+
+
+def line_profile():
+    freqs = np.linspace(1.99999e9, 2.00001e9, 10)
+    freq_center = 2.e9
+    T = 10.
+    mu = 28.
+    therm_a = np.sqrt(2.*kb_cgs*T/(mu*mH_cgs))
+    tot = 0.
+    for f in range(len(freqs)-1):
+        part = integrate_thermal_profile(
+            freqs[f], freqs[f+1], freq_center, T, mu, 0.)
+        tot = tot + part
+    return tot
+
+
+def calc_emissivity(freq, ni_u, A_ul, phi_nu_ul):
+    emissivity = freq * ni_u * A_ul
     return emissivity
+
+
+def calc_extinction(freq, phi_nu_ul, ni_u, ni_l, B_ul, B_lu):
+    extinction = freq * ((ni_l * B_lu)-(ni_u * B_ul))
+    return extinction
 
 
 def calc_source_func(emissivity, extinction):
@@ -170,7 +203,7 @@ def make_pdf(s, s_bar, sigma_s):
 
 def calc_lambda_jeans(n_H):
     T_mean = 10.  # K
-    lambda_jeans = ((np.sqrt(kb_ev * T_mean / m_p)) /
+    lambda_jeans = ((np.sqrt(kb_cgs * T_mean / m_p)) /
                     np.sqrt(4 * np.pi * G_cgs * n_H * m_p))
     return lambda_jeans
 
@@ -184,7 +217,6 @@ def calc_n_LW(n_H, G_o, lambda_jeans):
 
 
 def calc_n_LW_ss(n_H, n_H2, G_o, lambda_jeans):
-    m_p = 1.672621777e-24   # g
     kappa = 1000 * m_p
     rad_field_outside = G_o  # in solar units
     exp_tau = np.exp(-kappa * n_H * lambda_jeans)
@@ -261,8 +293,7 @@ def calc_stats():
         n_LW_9, S_H2_9, N_H2_9 = calc_n_LW_ss(n_H, n_H2_8, G_o, lambda_jeans)
         X_H2_9 = calc_X_H2(n_H, Z, n_LW_9)
         n_H2_9 = n_H * X_H2_9
-        n_LW_10, S_H2_10, N_H2_10 = calc_n_LW_ss(
-            n_H, n_H2_9, G_o, lambda_jeans)
+        n_LW_10, S_H2_10, N_H2_10 = calc_n_LW_ss(n_H, n_H2_9, G_o, lambda_jeans)
         X_H2_10 = calc_X_H2(n_H, Z, n_LW_10)
         n_H2_10 = n_H * X_H2_10
         n_LW_ss, S_H2, N_H2 = calc_n_LW_ss(n_H, n_H2_10, G_o, lambda_jeans)
@@ -272,41 +303,48 @@ def calc_stats():
     return n_H, n_H2, X_H2, lambda_jeans
 
 
-def plotting(L, n_H, ni, source_func, extinction, emissivity, n_H2, X_H2, freq):
+def plot(L, n_H, ni, source_func, extinction, emissivity, n_H2, X_H2, freq):
+    T = 10 #K
     fig, ax = plt.subplots()
     i = 2
     j = 1
-    '''m = 1
+    for u in range(0, num_lvls):
+        for l in range(0, u):
+            if u-l==1:
+                plt.scatter(np.log10(freq[u][l]), np.log10(emissivity[u][l]), color='b')
+    plt.xlabel('log(freq)')
+    plt.ylabel('log(Emissivity)')
+    plt.grid(b=True, which='both', axis='both')
+    plt.title('log(freq) vs log(Emissivity)')
+    plt.savefig(os.path.join('log(freq)vslog(Emissivity)'.format()), dpi= 'figure', bbox_inches= 'tight')
+    plt.clf()
 
     for u in range(0, num_lvls):
         for l in range(0, u):
             if u-l==1:
-                plt.scatter(n, emissivity[u][l])
-    plt.xlabel('ni')
-    plt.ylabel('Emissivity')
+                plt.scatter(np.log10(freq[u][l]), np.log10(extinction[u][l]), color='b')
+    plt.xlabel('log(freq)')
+    plt.ylabel('log(extinction)')
     plt.grid(b=True, which='both', axis='both')
-    ax.yaxis.set_major_formatter(ticks('%.2f'))
-    plt.title('ni vs Emissivity')
-    plt.savefig(os.path.join('nivsEmissivity'.format()), dpi= 'figure', bbox_inches= 'tight')
-    plt.clf()'''
+    plt.title('log(freq) vs log(extinction)')
+    plt.savefig(os.path.join('log(freq)vslog(extinction)'.format()), dpi= 'figure', bbox_inches= 'tight')
+    plt.clf()
 
     # for m in range(0,1000):
-    plt.plot(n_H, L[i][j])
+    plt.plot(n_H, L[i][j]/L_sun)
     plt.xlabel('$n_H$')
     plt.ylabel('L/$L_{sun}$')
     plt.grid(b=True, which='both', axis='both')
-    ax.yaxis.set_major_formatter(ticks('%.2f'))
-    plt.title('n_H vs (L/$L_{sun}$)')
+    plt.title('n_H vs (L/$L_{sun}$): u=2, l=1')
     plt.savefig(os.path.join('n_HvsL.png'.format()),
                 dpi='figure', bbox_inches='tight')
     plt.clf()
 
-    plt.plot(np.log10(n_H), L[i][j])
+    plt.plot(np.log10(n_H), L[i][j]/L_sun)
     plt.xlabel('log($n_H$)')
     plt.ylabel('(L/$L_{sun}$)')
     plt.grid(b=True, which='both', axis='both')
-    ax.yaxis.set_major_formatter(ticks('%.2f'))
-    plt.title('log(n_H) vs (L/$L_{sun}$)')
+    plt.title('log(n_H) vs (L/$L_{sun}$): u=2, l=1')
     plt.savefig(os.path.join('log(n_H)vsL.png'.format()),
                 dpi='figure', bbox_inches='tight')
     plt.clf()
@@ -314,24 +352,50 @@ def plotting(L, n_H, ni, source_func, extinction, emissivity, n_H2, X_H2, freq):
     for u in range(0, num_lvls):
         for l in range(0, u):
             if u-l == 1:
-                plt.scatter(np.log10(freq[u][l]), source_func[u][l])
-    plt.xlabel('freq')
+                plt.scatter(np.log10(freq[u][l]), source_func[u][l], color='b')
+    plt.xlabel('log(freq)')
     plt.ylabel('$S_{nu}$')
     plt.grid(b=True, which='both', axis='both')
-    ax.yaxis.set_major_formatter(ticks('%.2f'))
-    plt.title('freq vs $S_{nu}$')
-    plt.savefig(os.path.join('freqvsS_nu'.format()),
+    plt.title('log(freq) vs $S_{nu}$')
+    plt.savefig(os.path.join('log(freq)vsS_nu'.format()),
                 dpi='figure', bbox_inches='tight')
     plt.clf()
 
-    plt.plot(np.log10(n_H), np.log10(L[i][j]))
+    for u in range(0, num_lvls):
+        for l in range(0, u):
+            if u-l == 1:
+                plt.scatter(np.log10(h_ev*freq[u][l]/kb_ev*T), source_func[u][l], color='b')
+    plt.xlabel('log(h*freq/KT)')
+    plt.ylabel('$S_{nu}$')
+    plt.grid(b=True, which='both', axis='both')
+    #ax.yaxis.set_major_formatter(ticks('%.2f'))
+    plt.title('log(h*freq/KT) vs $S_{nu}$')
+    plt.savefig(os.path.join('log(h_nu_KT)vsS_nu'.format()),
+                dpi='figure', bbox_inches='tight')
+    plt.clf()
+
+    '''for u in range(0, num_lvls):
+        for l in range(0, u):
+            if u-l == 1:
+                plt.plot(np.log10(ni[u]), np.log10(L[i][j]/L_sun), color='b')
+    plt.xlabel('log(ni)')
+    plt.ylabel('log(L/$L_{sun}$)')
+    plt.grid(b=True, which='both', axis='both')
+    plt.title('log(ni) vs log(L/$L_{sun}$)')
+    plt.savefig(os.path.join('log(ni)vslog(L).png'.format()))
+    plt.clf()'''
+
+    plt.plot(np.log10(n_H), np.log10(L[i][j]/L_sun))
     plt.xlabel('log(n_H)')
     plt.ylabel('log(L/$L_{sun}$)')
     plt.grid(b=True, which='both', axis='both')
-    ax.yaxis.set_major_formatter(ticks('%.1f'))
-    plt.title('log(n_H) vs log(L/$L_{sun}$)')
+    plt.title('log(n_H) vs log(L/$L_{sun}$): u=2, l=1')
     plt.savefig(os.path.join('log(n_H)vslog(L).png'.format()))
     plt.clf()
+
+    '''for u in range(0, num_lvls):
+        for l in range(0, u):
+            plt.scatter(np.log10(n_H), np.log10(L[u][l]/L_sun), color='b')'''
 
 
 if __name__ == '__main__':
@@ -339,25 +403,39 @@ if __name__ == '__main__':
     os.makedirs(path, exist_ok=True)
     os.chdir(path)
     T = 10  # temperature (K)
-    mu, num_lvls, E, g, freq, A, B, C, num_partners, temps_all = read_file('CO.txt')
+    mu, num_lvls, E, g, freq, A, B, C, num_partners, temps_all = read_file(
+        'CO.txt')
     source_func = np.zeros((num_lvls, num_lvls))
     extinction = np.zeros((num_lvls, num_lvls))
     emissivity = np.zeros((num_lvls, num_lvls))
+    phi_nu = np.zeros((num_lvls, num_lvls))
+    j_nu = np.zeros((num_lvls, num_lvls))
+    alpha_nu = np.zeros((num_lvls, num_lvls))
+    L1 = np.zeros((num_lvls, num_lvls, 1000))
     L = np.zeros((num_lvls, num_lvls, 1000))
     # calculate LTE occupation numbers with partition function method
     ni = calc_lvl_pops_partion(T, num_lvls, g, E)
-    for i in range(0, num_lvls):
-        for j in range(0, i):
-            extinction[i][j] = calc_extinction(
-                T, ni[i], ni[j], freq[i][j], B[i][j], B[j][i])
-            emissivity[i][j] = calc_emissivity(freq[i][j], ni[i], A[i][j])
-            source_func[i][j] = calc_source_func(
-                emissivity[i][j], extinction[i][j])
-    n_H, n_H2, X_H2, lambda_jeans = calc_stats()
-    for i in range(0, num_lvls):
-        for j in range(0, i):
-            for m in range(0, 1000):
-                L[i][j][m] = (4*np.pi) * ((lambda_jeans[m]) **
-                                          2) * source_func[i][j] / L_sun
 
-    plotting(L, n_H, ni, source_func, extinction, emissivity, n_H2, X_H2, freq)
+    a = np.sqrt(2*kb_cgs*T/(mu*m_p))
+    u = 0  # UPPER LEVEL
+    l = 0  # LOWER LEVEL
+    ctr = 0
+    for u in range(0, num_lvls):
+        for l in range(0, u):
+            if u-l == 1:
+                ctr = ctr + 1
+                phi_nu[u][l] = line_profile()
+                j_nu[u][l] = calc_emissivity(
+                    freq[u][l], ni[u], A[u][l], phi_nu[u][l])
+                alpha_nu[u][l] = calc_extinction(
+                    freq[u][l], phi_nu[u][l], ni[u], ni[l], B[u][l], B[l][u])
+                source_func[u][l] = calc_source_func(
+                    j_nu[u][l], alpha_nu[u][l])
+    n_H, n_H2, X_H2, lambda_jeans = calc_stats()
+    for u in range(0, num_lvls):
+        for l in range(0, u):
+            for m in range(0, 1000):
+                L[u][l][m] += (4*np.pi) * ((lambda_jeans[m])**2) * j_nu[u][l]
+
+    plot(L, n_H, ni, source_func, alpha_nu,
+         j_nu, n_H2, X_H2, freq)
