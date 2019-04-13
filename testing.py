@@ -1,3 +1,36 @@
+import numpy as np
+
+def def_a(a1):
+    a = 2*a1
+    return a
+
+def def_b(a1, b1):
+    b = a1 + b1
+    return b
+
+def simple_test(i):
+    foo = np.array([1, 1, 1])
+    bar = np.array([2, 3, 4])
+    for i in range(0, len(foo)):
+        a = def_a(foo)
+        b = def_b(foo, bar)
+        c = a * b
+    return a, b, c
+
+
+if __name__ == '__main__':
+    a = np.zeros(3)
+    b = np.zeros(3)
+    c = np.zeros(3)
+    i = 10
+    a, b, c = simple_test(i)
+    print (a)
+    print (b)
+    print (c)
+
+
+
+"""
 #for plotting different iterations of the H2 self shielding using Draine's formula
 
 import numpy as np
@@ -231,9 +264,9 @@ if __name__=='__main__':
     os.makedirs(path, exist_ok=True)
     os.chdir(path)
     n_H, n_H2, X_H2, n_LW, n_LW_ss, S_H2, N_H2, X_H2_a, n_H2_a, n_LW_1, n_LW_2, n_LW_3, n_LW_4, n_LW_5, n_LW_6, n_LW_7, n_LW_8, n_LW_9, n_LW_10, X_H2_1, X_H2_2, X_H2_3, X_H2_4, X_H2_5, X_H2_6, X_H2_7, X_H2_8, X_H2_9, X_H2_10, n_H2_1, n_H2_2, n_H2_3, n_H2_4, n_H2_5, n_H2_6, n_H2_7, n_H2_8, n_H2_9, n_H2_10 = CO_density()
-
-
-"""# ---------------
+"""
+'''
+# ---------------
 # Code for plotting X_H2 vs log(n_H) for different values of Z, mach_no, and
 # n_H_mean
 # ---------------
@@ -421,8 +454,10 @@ if __name__=='__main__':
                 plot_X_H2_vs_n_H(X_H2, n_H, label, value)
             plt.savefig('log(n_H)vslogPDF-diff n_H_mean.png'.format())
             plt.clf()
+'''
+
 """
-'''#plotting(s, pdf, lambda_jeans_cm, n_H, X_H2, X_H2_bar, tot_n_H_bar, tot_n_H2_bar)
+#plotting(s, pdf, lambda_jeans_cm, n_H, X_H2, X_H2_bar, tot_n_H_bar, tot_n_H2_bar)
 
 
 # ---------------
@@ -583,3 +618,4 @@ if __name__=='__main__':
         tot_n_H2_bar = X_H2 * tot_n_H_bar * ds
     X_H2_bar = tot_n_H_bar/tot_n_H2_bar
     plotting(x, pdf, lambda_jeans_cm, n_H, X_H2, X_H2_bar, tot_n_H_bar, tot_n_H2_bar)'''
+"""

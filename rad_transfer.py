@@ -173,24 +173,16 @@ def line_profile():
 
 
 def calc_emissivity(freq, ni_u, A_ul, phi_nu_ul):
-    emissivity = freq * ni_u * A_ul
+    emissivity = (h_ev/4*np.pi) * freq * ni_u * A_ul * phi_nu_ul
     return emissivity
 
 
 def calc_extinction(freq, phi_nu_ul, ni_u, ni_l, B_ul, B_lu):
-    extinction = freq * ((ni_l * B_lu)-(ni_u * B_ul))
+    extinction = (h_ev/4*np.pi) * freq * phi_nu_ul * ((ni_l * B_lu)-(ni_u * B_ul))
     return extinction
 
 
 def calc_source_func(emissivity, extinction):
-    '''#since this is LTE, source function = BBR
-    if nu_ij==0.:
-        return 0.
-    else:
-        x = h_ev*nu_ij/(kb_ev*T)
-        # units eV*s * Hz3 / (cm2/s2) = eV * s3 * Hz3 * cm-2 = eV/s/Hz/cm2
-        S_nu = 2.0*h_ev*(nu_ij**3)/(c_cgs**2) / (np.exp(x)-1.0)
-        return S_nu'''
     S_nu = emissivity / extinction
     return S_nu
 
@@ -238,6 +230,58 @@ def calc_X_H2(n_H, Z, n_LW):
     return X_H2
 
 
+def self_shielding_iterations(n_H, G_o, lambda_jeans, Z):
+    n_LW = calc_n_LW(n_H, G_o, lambda_jeans)
+    X_H2_a = calc_X_H2(n_H, Z, n_LW)
+    n_H2_a = n_H * X_H2_a
+
+    n_LW_1, S_H2_1, N_H2_1 = calc_n_LW_ss(n_H, n_H2_a, G_o, lambda_jeans)
+    X_H2_1 = calc_X_H2(n_H, Z, n_LW_1)
+    n_H2_1 = n_H * X_H2_1
+
+    n_LW_2, S_H2_2, N_H2_2 = calc_n_LW_ss(n_H, n_H2_1, G_o, lambda_jeans)
+    X_H2_2 = calc_X_H2(n_H, Z, n_LW_2)
+    n_H2_2 = n_H * X_H2_2
+
+    n_LW_3, S_H2_3, N_H2_3 = calc_n_LW_ss(n_H, n_H2_2, G_o, lambda_jeans)
+    X_H2_3 = calc_X_H2(n_H, Z, n_LW_3)
+    n_H2_3 = n_H * X_H2_3
+
+    n_LW_4, S_H2_4, N_H2_4 = calc_n_LW_ss(n_H, n_H2_3, G_o, lambda_jeans)
+    X_H2_4 = calc_X_H2(n_H, Z, n_LW_4)
+    n_H2_4 = n_H * X_H2_4
+
+    n_LW_5, S_H2_5, N_H2_5 = calc_n_LW_ss(n_H, n_H2_4, G_o, lambda_jeans)
+    X_H2_5 = calc_X_H2(n_H, Z, n_LW_5)
+    n_H2_5 = n_H * X_H2_5
+
+    n_LW_6, S_H2_6, N_H2_6 = calc_n_LW_ss(n_H, n_H2_5, G_o, lambda_jeans)
+    X_H2_6 = calc_X_H2(n_H, Z, n_LW_6)
+    n_H2_6 = n_H * X_H2_6
+
+    n_LW_7, S_H2_7, N_H2_7 = calc_n_LW_ss(n_H, n_H2_6, G_o, lambda_jeans)
+    X_H2_7 = calc_X_H2(n_H, Z, n_LW_7)
+    n_H2_7 = n_H * X_H2_7
+
+    n_LW_8, S_H2_8, N_H2_8 = calc_n_LW_ss(n_H, n_H2_7, G_o, lambda_jeans)
+    X_H2_8 = calc_X_H2(n_H, Z, n_LW_8)
+    n_H2_8 = n_H * X_H2_8
+
+    n_LW_9, S_H2_9, N_H2_9 = calc_n_LW_ss(n_H, n_H2_8, G_o, lambda_jeans)
+    X_H2_9 = calc_X_H2(n_H, Z, n_LW_9)
+    n_H2_9 = n_H * X_H2_9
+
+    n_LW_10, S_H2_10, N_H2_10 = calc_n_LW_ss(n_H, n_H2_9, G_o, lambda_jeans)
+    X_H2_10 = calc_X_H2(n_H, Z, n_LW_10)
+    n_H2_10 = n_H * X_H2_10
+
+    n_LW_ss, S_H2, N_H2 = calc_n_LW_ss(n_H, n_H2_10, G_o, lambda_jeans)
+    X_H2 = calc_X_H2(n_H, Z, n_LW_ss)
+    n_H2 = n_H * X_H2
+
+    return n_LW, X_H2_a, n_H2_a, n_LW_ss, S_H2, N_H2, X_H2, n_H2
+
+
 def calc_stats():
     s = np.zeros(1000)
     pdf = np.zeros(1000)
@@ -246,9 +290,11 @@ def calc_stats():
     n_H = np.zeros(1000)
     n_LW = np.zeros(1000)
     n_LW_ss = np.zeros(1000)
-    n_H2 = np.zeros(1000)
     S_H2 = np.zeros(1000)
     N_H2 = np.zeros(1000)
+    X_H2_a = np.zeros(1000)
+    n_H2_a = np.zeros(1000)
+    n_H2 = np.zeros(1000)
     mach_no = 5
     sigma_s = np.sqrt(np.log(1 + ((0.3 * mach_no)**2)))
     s_bar = -0.5*(sigma_s**2)
@@ -260,45 +306,10 @@ def calc_stats():
     G_o = 1
     for i in range(0, 1000):
         s[i] = smin + i*ds
-        pdf = make_pdf(s, s_bar, sigma_s)
-        n_H = n_H_mean * np.exp(s)
-        lambda_jeans = calc_lambda_jeans(n_H)
-        n_LW = calc_n_LW(n_H, G_o, lambda_jeans)
-        X_H2_a = calc_X_H2(n_H, Z, n_LW)
-        n_H2_a = n_H * X_H2_a
-        n_LW_1, S_H2_1, N_H2_1 = calc_n_LW_ss(n_H, n_H2_a, G_o, lambda_jeans)
-        X_H2_1 = calc_X_H2(n_H, Z, n_LW_1)
-        n_H2_1 = n_H * X_H2_1
-        n_LW_2, S_H2_2, N_H2_2 = calc_n_LW_ss(n_H, n_H2_1, G_o, lambda_jeans)
-        X_H2_2 = calc_X_H2(n_H, Z, n_LW_2)
-        n_H2_2 = n_H * X_H2_2
-        n_LW_3, S_H2_3, N_H2_3 = calc_n_LW_ss(n_H, n_H2_2, G_o, lambda_jeans)
-        X_H2_3 = calc_X_H2(n_H, Z, n_LW_3)
-        n_H2_3 = n_H * X_H2_3
-        n_LW_4, S_H2_4, N_H2_4 = calc_n_LW_ss(n_H, n_H2_3, G_o, lambda_jeans)
-        X_H2_4 = calc_X_H2(n_H, Z, n_LW_4)
-        n_H2_4 = n_H * X_H2_4
-        n_LW_5, S_H2_5, N_H2_5 = calc_n_LW_ss(n_H, n_H2_4, G_o, lambda_jeans)
-        X_H2_5 = calc_X_H2(n_H, Z, n_LW_5)
-        n_H2_5 = n_H * X_H2_5
-        n_LW_6, S_H2_6, N_H2_6 = calc_n_LW_ss(n_H, n_H2_5, G_o, lambda_jeans)
-        X_H2_6 = calc_X_H2(n_H, Z, n_LW_6)
-        n_H2_6 = n_H * X_H2_6
-        n_LW_7, S_H2_7, N_H2_7 = calc_n_LW_ss(n_H, n_H2_6, G_o, lambda_jeans)
-        X_H2_7 = calc_X_H2(n_H, Z, n_LW_7)
-        n_H2_7 = n_H * X_H2_7
-        n_LW_8, S_H2_8, N_H2_8 = calc_n_LW_ss(n_H, n_H2_7, G_o, lambda_jeans)
-        X_H2_8 = calc_X_H2(n_H, Z, n_LW_8)
-        n_H2_8 = n_H * X_H2_8
-        n_LW_9, S_H2_9, N_H2_9 = calc_n_LW_ss(n_H, n_H2_8, G_o, lambda_jeans)
-        X_H2_9 = calc_X_H2(n_H, Z, n_LW_9)
-        n_H2_9 = n_H * X_H2_9
-        n_LW_10, S_H2_10, N_H2_10 = calc_n_LW_ss(n_H, n_H2_9, G_o, lambda_jeans)
-        X_H2_10 = calc_X_H2(n_H, Z, n_LW_10)
-        n_H2_10 = n_H * X_H2_10
-        n_LW_ss, S_H2, N_H2 = calc_n_LW_ss(n_H, n_H2_10, G_o, lambda_jeans)
-        X_H2 = calc_X_H2(n_H, Z, n_LW_ss)
-        n_H2 = n_H * X_H2
+        pdf[i] = make_pdf(s[i], s_bar, sigma_s)
+        n_H[i] = n_H_mean * np.exp(s[i])
+        lambda_jeans[i] = calc_lambda_jeans(n_H[i])
+        n_LW[i], X_H2_a[i], n_H2_a[i], n_LW_ss[i], S_H2[i], N_H2[i], X_H2[i], n_H2[i] = self_shielding_iterations(n_H[i], G_o, lambda_jeans[i], Z)
 
     return n_H, n_H2, X_H2, lambda_jeans
 
@@ -411,7 +422,6 @@ if __name__ == '__main__':
     phi_nu = np.zeros((num_lvls, num_lvls))
     j_nu = np.zeros((num_lvls, num_lvls))
     alpha_nu = np.zeros((num_lvls, num_lvls))
-    L1 = np.zeros((num_lvls, num_lvls, 1000))
     L = np.zeros((num_lvls, num_lvls, 1000))
     # calculate LTE occupation numbers with partition function method
     ni = calc_lvl_pops_partion(T, num_lvls, g, E)
@@ -435,7 +445,7 @@ if __name__ == '__main__':
     for u in range(0, num_lvls):
         for l in range(0, u):
             for m in range(0, 1000):
-                L[u][l][m] += (4*np.pi) * ((lambda_jeans[m])**2) * j_nu[u][l]
+                L[u][l][m] = (4*np.pi) * ((lambda_jeans[m])**2) * j_nu[u][l]
 
     plot(L, n_H, ni, source_func, alpha_nu,
          j_nu, n_H2, X_H2, freq)
