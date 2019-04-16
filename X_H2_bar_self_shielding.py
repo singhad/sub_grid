@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-from matplotlib.lines import Line2D
 
 def make_pdf(s, s_bar, sigma_s):
     pdf = (1/np.sqrt(2*np.pi*(sigma_s**2))) * (np.exp(-0.5*(((s - s_bar)/sigma_s)**2)))
@@ -116,37 +115,19 @@ def varying_M():
     fig, ax = plt.subplots()
     Z = 1
     G_o = 1
-    mach_no_arr = np.logspace(-2, 2, 5)
+    mach_no_arr = np.logspace(-2, 2, 40)
     n_H_mean_arr = np.logspace(-2, 3.5, 40)
     X_H2_bar = np.zeros(len(n_H_mean_arr))
-    label = "M "
-    color_arr = ['r','g','b','y','k']
-    custom_lines = [Line2D([0], [0], color='r', lw=4),
-                    Line2D([0], [0], color='g', lw=4),
-                    Line2D([0], [0], color='b', lw=4),
-                    Line2D([0], [0], color='y', lw=4),
-                    Line2D([0], [0], color='k', lw=4)]
     for m in range(len(mach_no_arr)):
         mach_no = mach_no_arr[m]
-        color = str(color_arr[m])
-        for y in range(len(n_H_mean_arr)):
-            n_H_mean = n_H_mean_arr[y]
-            X_H2_bar = inside_loop(mach_no, n_H_mean, Z, G_o)
-            plt.scatter(np.log10(n_H_mean), X_H2_bar, color=color)
-
-    ax.legend(  custom_lines,
-                [   label + '= 1e-2',
-                    label + '= 1e-1',
-                    label + '= 1e0',
-                    label + '= 1e+1',
-                    label + '= 1e+2'  ],
-                loc = 'lower right'
-                    )
+        n_H_mean = n_H_mean_arr[m]
+        X_H2_bar = inside_loop(mach_no, n_H_mean, Z, G_o)
+        plt.scatter(np.log10(n_H_mean), X_H2_bar, color='b')
     plt.xlabel('log(n_H_mean)')
     plt.ylabel('X_H2_bar')
     plt.grid(b=True, which='both', axis='both')
     plt.title('log(n_H_mean) vs X_H2_bar - M=varied, Z=1, G_o=1')
-    plt.savefig(os.path.join('log(n_H_mean)vsX_H2_bar--M.png'.format()))
+    plt.savefig(os.path.join('log(n_H_mean)vsX_H2_bar--M-correct.png'.format()))
     plt.clf()
     return X_H2_bar
 
@@ -154,34 +135,20 @@ def varying_Z():
     fig, ax = plt.subplots()
     mach_no = 10
     G_o = 1
-    Z_arr = np.array([0.001, 0.01, 0.1, 1.])
+    Z_arr = np.logspace(-3, 1, 40)
     n_H_mean_arr = np.logspace(-2, 3.5, 40)
     X_H2_bar = np.zeros(len(n_H_mean_arr))
-    label = "Z "
-    color_arr = ['r','g','b','y']
-    custom_lines = [Line2D([0], [0], color='r', lw=4),
-                    Line2D([0], [0], color='g', lw=4),
-                    Line2D([0], [0], color='b', lw=4),
-                    Line2D([0], [0], color='y', lw=4)]
+
     for z in range(0, len(Z_arr)):
         Z = Z_arr[z]
-        color = str(color_arr[z])
-        for y in range(len(n_H_mean_arr)):
-            n_H_mean = n_H_mean_arr[y]
-            X_H2_bar = inside_loop(mach_no, n_H_mean, Z, G_o)
-            plt.scatter(np.log10(n_H_mean), X_H2_bar, color=color)
+        n_H_mean = n_H_mean_arr[z]
+        X_H2_bar = inside_loop(mach_no, n_H_mean, Z, G_o)
+        plt.scatter(np.log10(n_H_mean), X_H2_bar, color='b')
     plt.xlabel('log(n_H_mean)')
     plt.ylabel('X_H2_bar')
     plt.grid(b=True, which='both', axis='both')
     plt.title('log(n_H_mean) vs X_H2_bar - M=10, Z=varied, G_o=1')
-    ax.legend(  custom_lines,
-                [   label + '= 0.001',
-                    label + '= 0.010',
-                    label + '= 0.100',
-                    label + '= 1.000'  ],
-                loc = 'lower right'
-                    )
-    plt.savefig(os.path.join('log(n_H_mean)vsX_H2_bar--Z.png'.format()))
+    plt.savefig(os.path.join('log(n_H_mean)vsX_H2_bar--Z-correct.png'.format()))
     plt.clf()
     return X_H2_bar
 
@@ -189,34 +156,19 @@ def varying_G_o():
     fig, ax = plt.subplots()
     mach_no = 10
     Z = 1
-    G_o_arr = np.array([1., 10., 50., 100.])
+    G_o_arr = np.logspace(-2, 3, 40)
     n_H_mean_arr = np.logspace(-2, 3.5, 40)
     X_H2_bar = np.zeros(len(n_H_mean_arr))
-    label = "G_o "
-    color_arr = ['r','g','b','y']
-    custom_lines = [Line2D([0], [0], color='r', lw=4),
-                    Line2D([0], [0], color='g', lw=4),
-                    Line2D([0], [0], color='b', lw=4),
-                    Line2D([0], [0], color='y', lw=4)]
     for g in range(0, len(G_o_arr)):
         G_o = G_o_arr[g]
-        color = str(color_arr[g])
-        for y in range(len(n_H_mean_arr)):
-            n_H_mean = n_H_mean_arr[y]
-            X_H2_bar = inside_loop(mach_no, n_H_mean, Z, G_o)
-            plt.scatter(np.log10(n_H_mean), X_H2_bar, color=color)
+        n_H_mean = n_H_mean_arr[g]
+        X_H2_bar = inside_loop(mach_no, n_H_mean, Z, G_o)
+        plt.scatter(np.log10(n_H_mean), X_H2_bar, color='b')
     plt.xlabel('log(n_H_mean)')
     plt.ylabel('X_H2_bar')
     plt.grid(b=True, which='both', axis='both')
     plt.title('log(n_H_mean) vs X_H2_bar - M=10, Z=1, G_o=varied')
-    ax.legend(  custom_lines,
-                [   label + '= 1',
-                    label + '= 10',
-                    label + '= 50',
-                    label + '= 100'  ],
-                loc = 'lower right'
-                    )
-    plt.savefig(os.path.join('log(n_H_mean)vsX_H2_bar--G_o.png'.format()))
+    plt.savefig(os.path.join('log(n_H_mean)vsX_H2_bar--G_o-correct.png'.format()))
     plt.clf()
     return X_H2_bar
 
