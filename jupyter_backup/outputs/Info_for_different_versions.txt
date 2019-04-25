@@ -6,3 +6,24 @@ now - First trial; 5kpc
 1.3 - X_H2_bar(M, n_H_mean), X_CO_bar(M, n_H_mean); 15kpc
 1.4 - X_H2_bar(M, n_H_mean, Z), X_CO_bar(M, n_H_mean, Z); 5kpc
 1.5 - X_H2_bar(M, n_H_mean, Z), X_CO_bar(M, n_H_mean, Z); 15kpc
+1.6 - X_H2_bar(M, n_H_mean), X_CO_bar(M, n_H_mean); 5kpc - corrected formula for n_LW, n_LW_ss, n_CO to include (Z/0.02)
+1.7 - X_H2_bar(M, n_H_mean), X_CO_bar(M, n_H_mean); 15kpc - corrected formula for n_LW, n_LW_ss, n_CO to include (Z/0.02)
+1.8 - X_H2_bar(M, n_H_mean, Z), X_CO_bar(M, n_H_mean, Z); 5kpc - corrected formula for n_LW, n_LW_ss, n_CO to include (Z/0.02)
+1.9 - X_H2_bar(M, n_H_mean, Z), X_CO_bar(M, n_H_mean, Z); 15kpc - corrected formula for n_LW, n_LW_ss, n_CO to include (Z/0.02)
+2.0 - X_H2_bar(M, n_H_mean, Z), X_CO_bar(M, n_H_mean, Z); 5kpc - units of Z correction
+2.1 - X_H2_bar(M, n_H_mean, Z), X_CO_bar(M, n_H_mean, Z); 5kpc - units of Z correction again (testing)
+2.2 - X_H2_bar(M, n_H_mean, Z), X_CO_bar(M, n_H_mean, Z); 5kpc - units of Z correction(testing-2.0) + n_LW_ss = no Z
+2.3 - X_H2_bar(M, n_H_mean, Z), X_CO_bar(M, n_H_mean, Z); 5kpc - units of Z correction(testing-2.1) + n_LW_ss = no Z
+
+2.4 - X_H2_bar(M, n_H_mean, Z), X_CO_bar(M, n_H_mean, Z); 5kpc - Z = Z_solar = Z_sim/0.02; kappa = 1000*m_p*Z
+2.5 - X_H2_bar(M, n_H_mean, Z), X_CO_bar(M, n_H_mean, Z); 5kpc - Z = Z_mf = Z_sim; kappa = 1000*m_p*(Z/0.02)
+2.6 - 15kpc of 2.4
+2.7 - 15kpc of 2.5
+
+
+
+
+
+
+reference_plots_1.0 - 5kpc ; for Z = Z_solar = Z_sim/0.02; kappa = 1000*m_p*Z --> SOLAR UNITS
+reference_plots_1.1 - 5kpc ; for Z = Z_mf = Z_sim; kappa = 1000*m_p*(Z/0.02) --> MASS FRACTION UNITS
