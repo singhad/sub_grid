@@ -1,11 +1,6 @@
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.colors as cm
 import pynbody
 from michaels_functions import center_and_r_vir, remove_bulk_velocity
-from matplotlib.colors import LogNorm
-from matplotlib.pyplot import figure
-
 
 def make_pdf(s, s_bar, sigma_s):
     pdf = (1/np.sqrt(2*np.pi*(sigma_s**2))) * (np.exp(-0.5*(((s - s_bar)/sigma_s)**2)))
@@ -52,7 +47,7 @@ def calc_X_H2(n_H, Z, n_LW):
     DC = 1.7e-11
     CC = 2.5e-17            #cm3 s-1
     numerator = DC * n_LW
-    denominator = CC * Z * n_H
+    denominator = CC * (Z/0.02) * n_H
     X_H2 = 1 / (2 + (numerator/denominator) )
     return X_H2
 
@@ -97,23 +92,13 @@ def calc_n_CO(n_H, X_CO, Z):
     return n_H * abundance_Ctot * (Z/0.02) * X_CO # CO/cc
 
 
-def inside_loop(M, n_H_mean, Z, G_o, c_s):
-    s = np.zeros(100)
-    n_H = np.zeros(100)
-    pdf = np.zeros(100)
-    lambda_jeans = np.zeros(100)
-    X_CO = np.zeros(100)
-    n_CO = np.zeros(100)
-    integral1 = 0
-    integral2 = 0
-    sigma_s = np.sqrt(np.log(1 + ((0.3 * M)**2)))
-    s_bar = -0.5*(sigma_s**2)
-    smin = -7*sigma_s + s_bar
-    smax = 7*sigma_s + s_bar
-    ds = (smax - smin)/100
-    for i in range(100):
-        s[i] = smin + i*ds
-    pdf = make_pdf(s, s_bar, sigma_s)
+def inside_loop(M, n_H_mean, Z, G_o, c_s, s, pdf, lambda_jeans, 
+                                                  X_CO, n_CO, integral1, integral2, ds):
+    lambda_jeans = 0 * lambda_jeans
+    X_CO = 0 * X_CO
+    n_CO = 0 * n_CO
+    integral1 = 0.0
+    integral2 = 0.0
     n_H = n_H_mean * np.exp(s)
     lambda_jeans = calc_lambda_jeans(n_H, c_s)
     n_LW, n_LW_ss, X_H2_ss, n_H2_ss, n_H2 = self_shielding_iterations(n_H, G_o, lambda_jeans, Z)
@@ -124,7 +109,6 @@ def inside_loop(M, n_H_mean, Z, G_o, c_s):
     integral2 = calc_integral2(s, pdf, X_CO, ds)
     X_CO_bar = integral2
     return X_H2_bar, X_CO_bar
-
 
 if __name__=='__main__':
     path = "bulk1/data_2/hydro_59/output/"
@@ -157,6 +141,8 @@ if __name__=='__main__':
     K_b = pynbody.array.SimArray(1.38064852e-16, "cm**2 g s**-2 K**-1")
     G = pynbody.array.SimArray(6.67259e-8, "cm**3 g**-1 s**-2")
     T_mean = pynbody.array.SimArray(10., "K")
+    dummy_length = pynbody.array.SimArray(1., "cm")
+    dummy_mass = pynbody.array.SimArray(1., "g")
     turb = np.sqrt( region.g["turb"] * 2./3. ) * unit_l / unit_t / 1e5
     turb = pynbody.array.SimArray(turb*1e5, units = "cm s**-1")
     T = region.g["temp"]
@@ -169,18 +155,33 @@ if __name__=='__main__':
     G_o = 1
     mach_no_arr = mach_no_sim
     n_H_mean_arr = n_H_mean_sim
-    #mach_no_arr = np.logspace(-2, 2, 40)
-    #n_H_mean_arr = np.logspace(-2, 3.5, 40)
     X_H2_bar = np.zeros(len(n_H_mean_arr))
     X_CO_bar = np.zeros(len(n_H_mean_arr))
-    for m in range(len(mach_no_arr)):
+    s = np.zeros(100)
+    n_H = np.zeros(100)
+    pdf = np.zeros(100)
+    lambda_jeans = np.zeros(100)
+    X_CO = np.zeros(100)
+    n_CO = np.zeros(100)
+    integral1 = 0
+    integral2 = 0
+    for m in range(0, len(mach_no_arr)):
         mach_no = mach_no_arr[m]
-        n_H_mean = n_H_mean_arr[m]
-        Z = Z_arr[m]
         c_s = c_s_arr[m]
-        X_H2_bar[m], X_CO_bar[m] = inside_loop(mach_no, n_H_mean, Z, G_o, c_s)
+        Z = Z_arr[m]
+        n_H_mean = n_H_mean_arr[m]
+        sigma_s = np.sqrt(np.log(1 + ((0.3 * mach_no)**2)))
+        s_bar = -0.5*(sigma_s**2)
+        smin = -7*sigma_s + s_bar
+        smax = 7*sigma_s + s_bar
+        ds = (smax - smin)/100
+        for i in range(0, 100):
+            s[i] = smin + i*ds
+        pdf = make_pdf(s, s_bar, sigma_s)
+        X_H2_bar[m], X_CO_bar[m] = inside_loop(mach_no, n_H_mean, Z, G_o, c_s, s, pdf, lambda_jeans, 
+                                              X_CO, n_CO, integral1, integral2, ds)
     np.save('outputs/2.7/X_H2_bar_2.7.npy', X_H2_bar)
     np.save('outputs/2.7/X_CO_bar_2.7.npy', X_CO_bar)
     np.save('outputs/2.7/mach_no_arr_2.7.npy', mach_no_arr)
     np.save('outputs/2.7/n_H_mean_arr_2.7.npy', n_H_mean_arr)
-    np.save('outputs/2.7/Z_arr_2.7.npy', n_H_mean_arr)
+    np.save('outputs/2.7/Z_arr_2.7.npy', Z_arr)

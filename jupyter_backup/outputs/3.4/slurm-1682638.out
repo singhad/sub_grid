@@ -1,0 +1,12 @@
+python run
+('shifting on Stars:', SimArray([ 0.00308878, -0.03302971, -0.04676732], 'kpc'))
+('virial radius:', SimArray(152.40432611, 'kpc'))
+omega_b     =  0.450000017881393E-01
+unit_l      =  0.682025380323961E+26
+unit_d      =  0.123367583719985E-28
+unit_t      =  0.163687521954501E+18
+Traceback (most recent call last):
+  File "3.4.py", line 207, in <module>
+    s[m][i], n_H[m][i], pdf[m][i], lambda_jeans[m][i], n_LW[m][i], n_H2[m][i], n_LW_ss[m][i], X_H2_ss[m][i], n_H2_ss[m][i], X_CO[m][i], n_CO[m][i] = inside_loop(mach_no, n_H_mean, Z, G_o, c_s, m_p)
+ValueError: setting an array element with a sequence.
+srun: error: hydra4: task 0: Exited with exit code 1

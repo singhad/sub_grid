@@ -35,7 +35,7 @@ def calc_n_LW(n_H, G_o, lambda_jeans, Z):
     return n_LW
 
 def calc_n_LW_ss(n_H, n_H2, G_o, lambda_jeans):
-    kappa = 1000 * m_p
+    kappa = 1000 * m_p * Z
     rad_field_outside = G_o #in solar units
     exp_tau = np.exp(-kappa * n_H * lambda_jeans)
     N_H2 = n_H2*lambda_jeans
