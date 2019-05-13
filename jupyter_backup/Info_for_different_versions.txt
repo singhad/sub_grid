@@ -30,8 +30,8 @@ now - First trial; 5kpc
 3.5 - Introduced constraints on formation of HII by introducing constraints on formation of HI by introducing constraints on temperature and n_H_mean (X_H2 = X_CO = 0 when T>=1e4K or n_H_mean<=1e-2[H]/cc ); 5kpc; Z_arr = Z_sim/0.02 = Solar units
 3.6 - 15 kpc version of 3.5
 3.7 - 15 kpc with 3.5 constraints; Z_arr = Z_sim = Mass fraction units
-
-
+3.8 - 5kpc; Z=solar; mach = turb/c_s(T_simulation); lambda_jeans ~ c_s(T_mean=10K)/sqrt(n_H); same constraints as 3.5
+3.9 - mach=10(fixed);lambda_jeans ~ c_s(T_mean=10K)/sqrt(n_H); same constraints as 3.5; Z_arr = Z_sim/0.02 = Solar units
 
 
 reference_plots_1.0 - 5kpc ; for Z = Z_solar = Z_sim/0.02; kappa = 1000*m_p*Z --> SOLAR UNITS
