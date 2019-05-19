@@ -290,11 +290,9 @@ def calc_stats():
     n_H = np.zeros(1000)
     n_LW = np.zeros(1000)
     n_LW_ss = np.zeros(1000)
+    n_H2 = np.zeros(1000)
     S_H2 = np.zeros(1000)
     N_H2 = np.zeros(1000)
-    X_H2_a = np.zeros(1000)
-    n_H2_a = np.zeros(1000)
-    n_H2 = np.zeros(1000)
     mach_no = 5
     sigma_s = np.sqrt(np.log(1 + ((0.3 * mach_no)**2)))
     s_bar = -0.5*(sigma_s**2)

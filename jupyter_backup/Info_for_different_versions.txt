@@ -34,6 +34,6 @@ now - First trial; 5kpc
 3.9 - mach=10(fixed);lambda_jeans ~ c_s(T_mean=10K)/sqrt(n_H); same constraints as 3.5; Z_arr = Z_sim/0.02 = Solar units
 4.0 - 15kpc of 3.8
 
-
+sub_grid - just for the sub_grid model, and to save X_H2, X_CO, n_CO, lambda_jeans arrays to use in rad_transf code later. Values            from simulation are not used here, this is purely theoretical.
 reference_plots_1.0 - 5kpc ; for Z = Z_solar = Z_sim/0.02; kappa = 1000*m_p*Z --> SOLAR UNITS
 reference_plots_1.1 - 5kpc ; for Z = Z_mf = Z_sim; kappa = 1000*m_p*(Z/0.02) --> MASS FRACTION UNITS
