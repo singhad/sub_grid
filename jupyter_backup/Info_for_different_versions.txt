@@ -35,5 +35,9 @@ now - First trial; 5kpc
 4.0 - 15kpc of 3.8
 
 sub_grid - just for the sub_grid model, and to save X_H2, X_CO, n_CO, lambda_jeans arrays to use in rad_transf code later. Values            from simulation are not used here, this is purely theoretical.
+michaels_version - the full version of 4.0 that Michael modified to make it more streamlined, still takes ~5 hours to run, same              outputs
+parallel_code - modified version of 4.0 that Michael modified to run on 16cpus parallely instead of 1cpu, it now takes ~4mins                instead of the previous ~5hours. The job script is also included, and the command to run this job+script is : 
+           sbatch job_python_parallel_code xh2_parr.py
+
 reference_plots_1.0 - 5kpc ; for Z = Z_solar = Z_sim/0.02; kappa = 1000*m_p*Z --> SOLAR UNITS
 reference_plots_1.1 - 5kpc ; for Z = Z_mf = Z_sim; kappa = 1000*m_p*(Z/0.02) --> MASS FRACTION UNITS
