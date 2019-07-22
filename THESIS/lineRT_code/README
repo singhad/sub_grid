@@ -1,0 +1,23 @@
+
+* calc_occupations.py
+  Contains the functions to determine the level populations
+
+* example.py
+  stuff to compare methods to calc lvlpops
+  stuff to plot excitation temperature
+
+* lineData.py
+  class that reads and stores the LAMBDA data file containing the information about the 
+  molecule and transitions
+
+* constants_lineRT.py
+  contains physical constants
+
+* get_density.py
+  functions to load and process the simulation data cube
+
+* observe.py
+  contains functions to generate images and spectra
+
+* species_info.py
+  contains molecule specific information and functions

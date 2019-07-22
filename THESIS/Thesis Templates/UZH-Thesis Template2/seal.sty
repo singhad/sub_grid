@@ -1,0 +1,87 @@
+% seal main style file
+%
+%
+
+\NeedsTeXFormat{LaTeX2e}[1999/12/01]
+\ProvidesPackage{seal}[2005/12/22 v1.0 seal styles]
+
+\usepackage{xspace}
+\usepackage{pdfsync}
+\usepackage{graphicx}
+\usepackage{listings}
+
+\newif\iftexshop
+\texshopfalse
+
+\newif\ifcomments
+\commentsfalse
+
+\DeclareOption{texshop}{%
+\input{protcode.tex}
+\global\texshoptrue
+}
+
+\DeclareOption{showcomments}{%
+\commentstrue
+}
+
+\ProcessOptions
+\newlength\origabovecaptionskip
+\setlength\origabovecaptionskip{\abovecaptionskip}
+\newlength\origbelowcaptionskip
+\setlength\origbelowcaptionskip{\belowcaptionskip}
+
+\newcommand\fig[4][0cm]{%
+  \begin{figure}[htb]
+    \ifdim #1=0cm
+      \includegraphics{#2}
+    \else
+      \includegraphics[width=#1]{#2}
+    \fi
+    \caption{\label{#4}#3}
+  \end{figure}%
+}
+
+%\def\fnum@lstlisting{{\bf\fontfamily{pfr}\selectfont \lstlistingname\nobreakspace\thelstlisting}}
+\lstset{columns=fullflexible}
+\lstset{basicstyle=\ttfamily}
+%\lstset{identifierstyle=\itshape}
+%\lstset{keywordstyle=\fontshape{n}\color{bj-blue}\bfseries}
+%\lstset{commentstyle=\normalfont\color{bj-blue}}
+%\lstset{stringstyle=\itshape}
+\lstset{tabsize=4}
+\lstset{showstringspaces=false}
+\lstset{lineskip=1.5pt}
+\lstset{captionpos=b}
+
+\newcommand\lstfbegin[2]{%
+  \begin{lstlisting}[abovecaptionskip=\origabovecaptionskip,%
+                     belowcaptionskip=-1.5ex,
+                     float,caption={#1},label={#2}]%
+}
+
+\newcommand\lstbegin{\begin{lstlisting}[xleftmargin=\leftmargin]%
+}
+\newcommand\lstend{\end{lstlisting}}
+\newcommand\lst{\lstinline}
+
+% useful commands
+
+\ifcomments
+\newcommand{\note}[2]{
+    \fbox{\bfseries\sffamily\scriptsize#1}
+    {\sf\small$\triangleright$\textit{#2}$\triangleleft$}
+   }
+\else
+\newcommand{\note}[2]{}
+\fi
+
+\newcommand{\lstref}[1]{Listing~\ref{#1}\xspace}
+\newcommand{\algref}[1]{Algorithm~\ref{#1}\xspace}
+\newcommand{\chapref}[1]{Chapter~\ref{#1}\xspace}
+\newcommand{\secref}[1]{Section~\ref{#1}\xspace}
+\newcommand{\figref}[1]{Figure~\ref{#1}\xspace}
+\newcommand{\tabref}[1]{Table~\ref{#1}\xspace}
+\newcommand{\ie}{\textit{i.e.,}\xspace}
+\newcommand{\eg}{\textit{e.g.,}\xspace}
+\newcommand{\etal}{\emph{et al.}\xspace}

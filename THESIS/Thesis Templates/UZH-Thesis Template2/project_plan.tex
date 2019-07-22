@@ -1,0 +1,57 @@
+\documentclass{seal_article}
+\usepackage{seal}
+\usepackage{longtable}
+
+\iftexshop
+\usepackage{pdfsync}
+\fi
+
+\title{Diploma Thesis Title}
+\subtitle{Project Plan}
+
+\begin{document}
+\maketitle
+
+\iftexshop
+\setprotcode\font
+{\it \setprotcode \font}
+{\bf \setprotcode \font}
+{\bf \it \setprotcode \font}
+\pdfprotrudechars=2
+\fi
+
+\noindent Diploma thesis\\
+\noindent Project period\\
+\noindent Student name\\
+\noindent Email address\\
+\noindent Supervisor name(s)
+
+\section{Project Description}
+
+\subsection{Overview}
+\subsection{Scope of the work}
+\subsection{Intended results}
+
+
+\section{Background Material}
+
+
+\section{Project Management}
+
+\subsection{Objectives and priorities}
+\subsection{Criteria for success}
+\subsection{Method of work}
+\subsection{Quality management}
+\subsubsection{Documentation}
+\subsubsection{Validation steps}
+
+\section{Plan with Milestone}
+\subsection{Project steps}
+\subsection{Tentative schedule}
+
+\nocite{Zobel04-writing,Strunk00-style}
+
+\bibliographystyle{abbrv}
+\bibliography{project_plan}
+
+\end{document}
